@@ -7,8 +7,6 @@ namespace Plugin_Sage.API
 {
     public class BusinessObjectService
     {
-//        private DispatchObject _pvx;
-//        private DispatchObject _oSS;
         private readonly SessionService _session;
         private DispatchObject _busObject;
 
@@ -16,16 +14,14 @@ namespace Plugin_Sage.API
         {
             _session = session;
         }
-
-        public void SetBusObject(string module, string headerTable, string tableName)
+        
+        public BusinessObjectService(SessionService session, string dataSource)
         {
+            _session = session;
+
             try
             {
-                _session.SetModule(module);
-                var taskId = (int) _session.GetoSS().InvokeMethod("nLookupTask", headerTable);
-                _session.GetoSS().InvokeMethod("nSetProgram", taskId);
-                _busObject = new DispatchObject(_session.Getpvx()
-                    .InvokeMethod("NewObject", tableName, _session.GetoSS().GetObject()));
+                SetBusObject(dataSource);
             }
             catch (Exception e)
             {
@@ -35,6 +31,62 @@ namespace Plugin_Sage.API
             }
         }
 
+        public void SetBusObject(string dataSource)
+        {
+            var config = new BusinessObjectConfig(dataSource);
+
+            try
+            {
+                _session.SetModule(config.Module);
+                var taskId = (int) _session.GetoSS().InvokeMethod("nLookupTask", config.HeaderTable);
+                _session.GetoSS().InvokeMethod("nSetProgram", taskId);
+                _busObject = new DispatchObject(_session.Getpvx()
+                    .InvokeMethod("NewObject", config.TableName, _session.GetoSS().GetObject()));
+            }
+            catch (Exception e)
+            {
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+        }
+        
+        public Dictionary<string, dynamic> GetSingleRecord()
+        {
+            // get metadata
+            var dataSources = _busObject.InvokeMethod("sGetDataSources");
+            var dataSourcesObject = dataSources.ToString().Split(System.Convert.ToChar(352));
+
+            var columns = _busObject.InvokeMethod("sGetColumns", dataSourcesObject[0]);
+            var columnsObject = columns.ToString().Split(System.Convert.ToChar(352));
+
+            var recordCount = _busObject.InvokeMethod("nGetRecordCount", dataSourcesObject[0]);
+
+            // init output record
+            var salesOrderDic = new Dictionary<string, dynamic>();
+
+            if (recordCount.ToString() == "0")
+            {
+                return salesOrderDic;
+            }
+            
+            var salesOrder = new object[] {"", ""};
+            _busObject.InvokeMethodByRef("nGetRecord", salesOrder);
+            var salesOrderObject = salesOrder[0].ToString().Split(System.Convert.ToChar(352));
+
+            
+            for (var i = 0; i < columnsObject.Length; i++)
+            {
+                salesOrderDic[columnsObject[i]] = salesOrderObject[i];
+            }
+
+            // get all lines records
+            var soLines = new DispatchObject(_busObject.GetProperty("oLines"));
+            salesOrderDic["LINES"] = GetLines(soLines);
+
+            return salesOrderDic;
+        }
+
         public List<Dictionary<string, dynamic>> GetAllRecords()
         {
             try
@@ -42,9 +94,6 @@ namespace Plugin_Sage.API
                 // get metadata
                 var dataSources = _busObject.InvokeMethod("sGetDataSources");
                 var dataSourcesObject = dataSources.ToString().Split(System.Convert.ToChar(352));
-
-                var keyColumns = _busObject.InvokeMethod("sGetKeyColumns");
-                var keyColumnsObject = keyColumns.ToString().Split(System.Convert.ToChar(352));
 
                 var columns = _busObject.InvokeMethod("sGetColumns", dataSourcesObject[0]);
                 var columnsObject = columns.ToString().Split(System.Convert.ToChar(352));
@@ -102,9 +151,6 @@ namespace Plugin_Sage.API
                 // get metadata
                 var dataSources = soLines.InvokeMethod("sGetDataSources");
                 var dataSourcesObject = dataSources.ToString().Split(System.Convert.ToChar(352));
-
-                var keyColumns = soLines.InvokeMethod("sGetKeyColumns");
-                var keyColumnsObject = keyColumns.ToString().Split(System.Convert.ToChar(352));
 
                 var columns = soLines.InvokeMethod("sGetColumns", dataSourcesObject[0]);
                 var columnsObject = columns.ToString().Split(System.Convert.ToChar(352));

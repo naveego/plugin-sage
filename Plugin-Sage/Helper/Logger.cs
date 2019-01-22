@@ -34,7 +34,6 @@ namespace Plugin_Sage.Helper
                     sw.WriteLine($"{DateTime.Now} {message}");
                     sw.Close();
                 }
-                Console.WriteLine(message);
             }
             finally
             {

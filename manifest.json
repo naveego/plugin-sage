@@ -1,0 +1,67 @@
+{
+  "id": "plugin-sage",
+  "displayName": "Sage Publisher",
+  "description": "Publisher which pulls data from a Sage instance",
+  "versionDescription": "Version 1",
+  "version": "1.0.0",
+  "iconFile": "icon.jpeg",
+  "executable": "Plugin-Sage",
+  "kind": "publisher",
+  "os": "$GOOS",
+  "arch": "$GOARCH",
+  "canProduceMultipleSchemas": true,
+  "canAcceptQueryBasedSchemas": false,
+  "canUseOAuth": false,
+  "configSchema": {
+    "ui": {
+      "ui:order": ["user", "password", "companyCode", "homePath", "modulesList"],
+      "password": {
+        "ui:widget": "password"
+      },
+      "modulesList": {
+        "ui:widget": "checkboxes",
+        "ui:options": {
+          "inline": true
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string",
+          "title": "Username",
+          "description": "The username to login to Sage"
+        },
+        "password": {
+          "type": "string",
+          "title": "Password",
+          "description": "The password to login to Sage"
+        },
+        "companyCode": {
+          "type": "string",
+          "title": "Company Code",
+          "description": "The company code of the company in Sage"
+        },
+        "homePath": {
+          "type": "string",
+          "title": "Sage 100 Home Path",
+          "description": "Local path to the MAS100/HOME directory (ex. C:\\Sage\\Sage 100 Advanced\\MAS90\\Home)"
+        },
+        "modulesList": {
+          "type": "array",
+          "title": "Modules",
+          "description": "List of modules available to discover in Sage",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Sales Orders"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": ["user", "password", "companyCode", "homePath"]
+    }
+  }
+}

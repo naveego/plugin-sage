@@ -26,7 +26,7 @@ namespace Plugin_Sage.API
 
             try
             {
-                _oSS.InvokeMethod("nSetUser", settings.User, settings.Pwd);
+                _oSS.InvokeMethod("nSetUser", settings.User, settings.Password);
                 _oSS.InvokeMethod("nSetCompany", settings.CompanyCode);
             }
             catch (Exception e)

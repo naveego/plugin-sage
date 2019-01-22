@@ -21,15 +21,14 @@ namespace Plugin_Sage
             var settings = new Settings
             {
                 User = "DEV",
-                Pwd = "iL7M2BOdC",
+                Password = "iL7M2BOdC",
                 CompanyCode = "ABC",
                 HomePath = @"C:\Sage\Sage 100 Advanced\MAS90\Home"
             };
 
             var sessionSvc = new SessionService(settings);
 
-            var salesOrderSvc = new BusinessObjectService(sessionSvc);
-            salesOrderSvc.SetBusObject("S/O", "SO_SalesOrder_ui", "SO_SalesOrder_bus");
+            var salesOrderSvc = new BusinessObjectService(sessionSvc, "SalesOrders");
 
             var records = salesOrderSvc.GetAllRecords();
 
