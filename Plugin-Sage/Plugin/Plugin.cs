@@ -45,7 +45,7 @@ namespace Plugin_Sage.Plugin
             catch (Exception e)
             {
                 Logger.Error(e.Message);
-                Task.FromResult(new ConnectResponse
+                return Task.FromResult(new ConnectResponse
                 {
                     OauthStateJson = request.OauthStateJson,
                     ConnectionError = "",
@@ -126,10 +126,10 @@ namespace Plugin_Sage.Plugin
 
                     Logger.Info($"Refresh shapes attempted: {refreshShapes.Count}");
 
-                    var tasks = refreshShapes.Select((x) =>
+                    var tasks = refreshShapes.Select((s) =>
                         {
-                            var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(x.PublisherMetaJson);
-                            return GetShapeForModule(metaJsonObject.Module, x.Id);
+                            var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(s.PublisherMetaJson);
+                            return GetShapeForModule(metaJsonObject.Module, s.Id);
                         })
                         .ToArray();
 
@@ -153,7 +153,7 @@ namespace Plugin_Sage.Plugin
             {
                 Logger.Info($"Shapes attempted: {_server.Settings.ModulesList.Length}");
 
-                var tasks = _server.Settings.ModulesList.Select((x, i) => GetShapeForModule(x, i.ToString()))
+                var tasks = _server.Settings.ModulesList.Select((m, i) => GetShapeForModule(m, i.ToString()))
                     .ToArray();
 
                 await Task.WhenAll(tasks);
@@ -221,42 +221,53 @@ namespace Plugin_Sage.Plugin
         /// <returns>returns a shape or null if unavailable</returns>
         private Task<Shape> GetShapeForModule(string module, string id)
         {
-            // base shape to be added to
-            var shape = new Shape
+            try
             {
-                Id = id,
-                Name = module,
-                Description = "",
-                PublisherMetaJson = JsonConvert.SerializeObject(new PublisherMetaJson
+                // base shape to be added to
+                var shape = new Shape
                 {
-                    Module = module
-                })
-            };
-
-            var busObjectService = new BusinessObjectService(_sessionService, module);
-
-            var record = busObjectService.GetSingleRecord();
-
-            var propId = 0;
-            foreach (var col in record)
-            {
-                var property = new Property
-                {
-                    Id = propId.ToString(),
-                    Name = col.Key,
-                    Type = GetPropertyType(col.Value),
-                    IsKey = false,
-                    IsCreateCounter = false,
-                    IsUpdateCounter = false,
-                    TypeAtSource = "",
-                    IsNullable = true
+                    Id = id,
+                    Name = module,
+                    Description = "",
+                    PublisherMetaJson = JsonConvert.SerializeObject(new PublisherMetaJson
+                    {
+                        Module = module
+                    })
                 };
 
-                shape.Properties.Add(property);
-                propId++;
-            }
+                // get business object service for given module
+                var busObjectService = new BusinessObjectService(_sessionService, module);
 
-            return Task.FromResult(shape);
+                // get a single record
+                var record = busObjectService.GetSingleRecord();
+
+                // assign all properties of record to shape
+                var propId = 0;
+                foreach (var col in record)
+                {
+                    var property = new Property
+                    {
+                        Id = propId.ToString(),
+                        Name = col.Key,
+                        Type = GetPropertyType(col.Value),
+                        IsKey = false,
+                        IsCreateCounter = false,
+                        IsUpdateCounter = false,
+                        TypeAtSource = "",
+                        IsNullable = true
+                    };
+
+                    shape.Properties.Add(property);
+                    propId++;
+                }
+
+                return Task.FromResult(shape);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                return null;
+            }
         }
 
         /// <summary>
@@ -268,45 +279,41 @@ namespace Plugin_Sage.Plugin
         {
             try
             {
-                // try object or array
-                if (value is IEnumerable)
-                {
-                    return PropertyType.Json;
-                }
-                
                 // try datetime
-                DateTime d;
-                if (DateTime.TryParse(value, out d))
+                if (DateTime.TryParse(value, out DateTime d))
                 {
                     return PropertyType.Date;
                 }
 
                 // try int
-                int i;
-                if (Int32.TryParse(value, out i))
+                if (Int32.TryParse(value, out int i))
                 {
                     return PropertyType.Integer;
                 }
 
                 // try float
-                float f;
-                if (float.TryParse(value, out f))
+                if (float.TryParse(value, out float f))
                 {
                     return PropertyType.Float;
                 }
-                
+
                 // try boolean
-                bool b;
-                if (bool.TryParse(value, out b))
+                if (bool.TryParse(value, out bool b))
                 {
                     return PropertyType.Bool;
                 }
-                
+
                 // default return string
                 return PropertyType.String;
             }
             catch (Exception e)
             {
+                // try object or array
+                if (value is IEnumerable)
+                {
+                    return PropertyType.Json;
+                }
+
                 Logger.Error(e.Message);
                 throw;
             }

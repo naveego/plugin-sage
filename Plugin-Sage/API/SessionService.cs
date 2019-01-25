@@ -9,6 +9,10 @@ namespace Plugin_Sage.API
         private DispatchObject _pvx;
         private DispatchObject _oSS;
 
+        /// <summary>
+        /// Creates a session service based on the provided settings
+        /// </summary>
+        /// <param name="settings"></param>
         public SessionService(Settings settings)
         {
             try
@@ -26,7 +30,7 @@ namespace Plugin_Sage.API
 
             try
             {
-                _oSS.InvokeMethod("nSetUser", settings.User, settings.Password);
+                _oSS.InvokeMethod("nSetUser", settings.Username, settings.Password);
                 _oSS.InvokeMethod("nSetCompany", settings.CompanyCode);
             }
             catch (Exception e)
@@ -37,16 +41,28 @@ namespace Plugin_Sage.API
             }
         }
 
+        /// <summary>
+        /// Gets the pvx member object
+        /// </summary>
+        /// <returns></returns>
         public DispatchObject Getpvx()
         {
             return _pvx;
         }
 
+        /// <summary>
+        /// Gets the oss member object
+        /// </summary>
+        /// <returns></returns>
         public DispatchObject GetoSS()
         {
             return _oSS;
         }
 
+        /// <summary>
+        /// Sets the module for the session
+        /// </summary>
+        /// <param name="moduleCode"></param>
         public void SetModule(string moduleCode)
         {
             try
@@ -63,6 +79,10 @@ namespace Plugin_Sage.API
             }
         }
 
+        /// <summary>
+        /// Returns the object describing the users current security permissions
+        /// </summary>
+        /// <returns></returns>
         public string GetSecurityAccess()
         {
             try
@@ -77,9 +97,21 @@ namespace Plugin_Sage.API
             }
         }
 
+        /// <summary>
+        /// Gets the most recent error created within the session
+        /// </summary>
+        /// <returns></returns>
         public string GetError()
         {
-            return (string) _oSS.GetProperty("sLastErrorMsg");
+            try
+            {
+                return (string) _oSS.GetProperty("sLastErrorMsg");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                throw;
+            }
         }
     }
 }

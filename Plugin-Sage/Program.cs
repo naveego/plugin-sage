@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
-using Newtonsoft.Json;
-using Plugin_Sage.API;
+using Grpc.Core;
+using Pub;
 using Plugin_Sage.Helper;
 
 namespace Plugin_Sage
@@ -18,21 +17,43 @@ namespace Plugin_Sage
         [STAThread]
         static void Main(string[] args)
         {
-            var settings = new Settings
+            try
             {
-                User = "DEV",
-                Password = "iL7M2BOdC",
-                CompanyCode = "ABC",
-                HomePath = @"C:\Sage\Sage 100 Advanced\MAS90\Home"
-            };
+                // Add final chance exception handler
+                AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
+                {
+                    Logger.Error($"died: {eventArgs.ExceptionObject}");
+                };
 
-            var sessionSvc = new SessionService(settings);
+                // create new server and start it
+                Server server = new Server
+                {
+                    Services = {Publisher.BindService(new Plugin.Plugin())},
+                    Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
+                };
+                server.Start();
 
-            var salesOrderSvc = new BusinessObjectService(sessionSvc, "SalesOrders");
+                // write out the connection information for the Hashicorp plugin runner
+                var output = String.Format("{0}|{1}|{2}|{3}:{4}|{5}",
+                    1, 1, "tcp", "localhost", server.Ports.First().BoundPort, "grpc");
 
-            var records = salesOrderSvc.GetAllRecords();
+                Console.WriteLine(output);
 
-            Console.WriteLine(JsonConvert.SerializeObject(records[9]["LINES"]));
+                Logger.Info("Started on port " + server.Ports.First().BoundPort);
+
+                // wait to exit until given input
+                while (true) {} // ***NEEDS TO BE REMOVED AFTER TESTING***
+                Console.ReadLine();
+
+                Logger.Info("Plugin exiting...");
+
+                // shutdown server
+                server.ShutdownAsync().Wait();
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+            }
         }
     }
 }

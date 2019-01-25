@@ -14,11 +14,11 @@
   "canUseOAuth": false,
   "configSchema": {
     "ui": {
-      "ui:order": ["user", "password", "companyCode", "homePath", "modulesList"],
+      "ui:order": ["Username", "Password", "CompanyCode", "HomePath", "ModulesList"],
       "password": {
         "ui:widget": "password"
       },
-      "modulesList": {
+      "ModulesList": {
         "ui:widget": "checkboxes",
         "ui:options": {
           "inline": true
@@ -28,40 +28,45 @@
     "schema": {
       "type": "object",
       "properties": {
-        "user": {
+        "Username": {
           "type": "string",
           "title": "Username",
           "description": "The username to login to Sage"
         },
-        "password": {
+        "Password": {
           "type": "string",
           "title": "Password",
           "description": "The password to login to Sage"
         },
-        "companyCode": {
+        "CompanyCode": {
           "type": "string",
           "title": "Company Code",
           "description": "The company code of the company in Sage"
         },
-        "homePath": {
+        "HomePath": {
           "type": "string",
           "title": "Sage 100 Home Path",
           "description": "Local path to the MAS100/HOME directory (ex. C:\\Sage\\Sage 100 Advanced\\MAS90\\Home)"
         },
-        "modulesList": {
+        "ModulesList": {
           "type": "array",
           "title": "Modules",
           "description": "List of modules available to discover in Sage",
           "items": {
             "type": "string",
             "enum": [
-              "Sales Orders"
+              "Sales Orders",
+              "Customer Information",
+              "Invoice History",
+              "Invoice History Detail",
+              "Item Information",
+              "Shipping Address"
             ]
           },
           "uniqueItems": true
         }
       },
-      "required": ["user", "password", "companyCode", "homePath"]
+      "required": ["Username", "Password", "CompanyCode", "HomePath"]
     }
   }
 }

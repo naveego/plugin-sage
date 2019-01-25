@@ -5,7 +5,7 @@ namespace Plugin_Sage.Helper
 {
     public class Settings
     {
-        public string User { get; set; }
+        public string Username { get; set; }
         public string Password { get; set; }
         public string CompanyCode { get; set; }
         public string HomePath { get; set; }
@@ -17,9 +17,9 @@ namespace Plugin_Sage.Helper
         /// <exception cref="Exception"></exception>
         public void Validate()
         {
-            if (String.IsNullOrEmpty(User))
+            if (String.IsNullOrEmpty(Username))
             {
-                throw new Exception("the User property must be set");
+                throw new Exception("the Username property must be set");
             }
             
             if (String.IsNullOrEmpty(Password))
