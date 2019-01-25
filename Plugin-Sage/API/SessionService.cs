@@ -1,10 +1,11 @@
 using System;
-using System.Runtime.InteropServices;
 using Plugin_Sage.Helper;
+using Plugin_Sage.Interfaces;
+using Plugin_Sage.Plugin;
 
 namespace Plugin_Sage.API
 {
-    public class SessionService
+    public class SessionService : ISessionService
     {
         private DispatchObject _pvx;
         private DispatchObject _oSS;
@@ -30,64 +31,8 @@ namespace Plugin_Sage.API
 
             try
             {
-                _oSS.InvokeMethod("nSetUser", settings.Username, settings.Password);
-                _oSS.InvokeMethod("nSetCompany", settings.CompanyCode);
-            }
-            catch (Exception e)
-            {
-                Logger.Error(GetError());
-                Logger.Error(e.Message);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Gets the pvx member object
-        /// </summary>
-        /// <returns></returns>
-        public DispatchObject Getpvx()
-        {
-            return _pvx;
-        }
-
-        /// <summary>
-        /// Gets the oss member object
-        /// </summary>
-        /// <returns></returns>
-        public DispatchObject GetoSS()
-        {
-            return _oSS;
-        }
-
-        /// <summary>
-        /// Sets the module for the session
-        /// </summary>
-        /// <param name="moduleCode"></param>
-        public void SetModule(string moduleCode)
-        {
-            try
-            {
-                var date = DateTime.Now.ToString("MMddyyyy");
-                _oSS.InvokeMethod("nSetDate", moduleCode, date);
-                _oSS.InvokeMethod("nSetModule", moduleCode);
-            }
-            catch (Exception e)
-            {
-                Logger.Error(GetError());
-                Logger.Error(e.Message);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Returns the object describing the users current security permissions
-        /// </summary>
-        /// <returns></returns>
-        public string GetSecurityAccess()
-        {
-            try
-            {
-                return _oSS.GetProperty("oSecurity").ToString();
+                _oSS.InvokeMethod("nSetUser",settings.Username, settings.Password);
+                _oSS.InvokeMethod("nSetCompany",settings.CompanyCode);
             }
             catch (Exception e)
             {
@@ -109,6 +54,55 @@ namespace Plugin_Sage.API
             }
             catch (Exception e)
             {
+                Logger.Error(e.Message);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates a business object to use for the given module
+        /// </summary>
+        /// <param name="module"></param>
+        /// <returns></returns>
+        public IBusinessObject MakeBusinessObject(string module)
+        {
+            // get config for the given data source
+            var config = new BusinessObjectConfig(module);
+
+            // make the business object
+            try
+            {
+                SetModule(config.Module);
+                var taskId = (int) _oSS.InvokeMethod("nLookupTask",config.TaskName);
+                _oSS.InvokeMethod("nSetProgram",taskId);
+                var busObject = new DispatchObject(_pvx.InvokeMethod("NewObject", config.BusObjectName, _oSS.GetObject()));
+
+                return new BusinessObject(this, busObject);
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error setting business service object");
+                Logger.Error(GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+        }
+        
+        /// <summary>
+        /// Sets the module for the session
+        /// </summary>
+        /// <param name="moduleCode"></param>
+        private void SetModule(string moduleCode)
+        {
+            try
+            {
+                var date = DateTime.Now.ToString("MMddyyyy");
+                _oSS.InvokeMethod("nSetDate",moduleCode, date);
+                _oSS.InvokeMethod("nSetModule",moduleCode);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(GetError());
                 Logger.Error(e.Message);
                 throw;
             }

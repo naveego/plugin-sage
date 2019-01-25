@@ -3,70 +3,24 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using Plugin_Sage.Helper;
+using Plugin_Sage.Interfaces;
 
 namespace Plugin_Sage.API
 {
-    public class BusinessObjectService
+    public class BusinessObject : IBusinessObject
     {
-        private readonly SessionService _session;
-        private DispatchObject _busObject;
+        private readonly ISessionService _session;
+        private readonly DispatchObject _busObject;
 
         /// <summary>
         /// Creates a service without a preset business object
         /// </summary>
         /// <param name="session"></param>
-        public BusinessObjectService(SessionService session)
+        /// <param name="busObject"></param>
+        public BusinessObject(ISessionService session, DispatchObject busObject)
         {
             _session = session;
-        }
-
-        /// <summary>
-        /// Creates a s service with a preset business object based on the data source
-        /// </summary>
-        /// <param name="session"></param>
-        /// <param name="dataSource"></param>
-        public BusinessObjectService(SessionService session, string dataSource)
-        {
-            _session = session;
-
-            try
-            {
-                SetBusObject(dataSource);
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Error creating business service object");
-                Logger.Error(_session.GetError());
-                Logger.Error(e.Message);
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Sets the business object based on the data source
-        /// </summary>
-        /// <param name="dataSource"></param>
-        public void SetBusObject(string dataSource)
-        {
-            // get config for the given data source
-            var config = new BusinessObjectConfig(dataSource);
-
-            // set the business object
-            try
-            {
-                _session.SetModule(config.Module);
-                var taskId = (int) _session.GetoSS().InvokeMethod("nLookupTask", config.TaskName);
-                _session.GetoSS().InvokeMethod("nSetProgram", taskId);
-                _busObject = new DispatchObject(_session.Getpvx()
-                    .InvokeMethod("NewObject", config.BusObjectName, _session.GetoSS().GetObject()));
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Error setting business service object");
-                Logger.Error(_session.GetError());
-                Logger.Error(e.Message);
-                throw;
-            }
+            _busObject = busObject;
         }
 
         /// <summary>
@@ -81,7 +35,7 @@ namespace Plugin_Sage.API
             // get metadata
             try
             {
-                var metadata = GetMetadata(_busObject);
+                var metadata = GetMetadata();
                 columnsObject = metadata.columnsObject;
                 recordCount = metadata.recordCount;
             }
@@ -105,7 +59,7 @@ namespace Plugin_Sage.API
                 // go to first record
                 _busObject.InvokeMethod("nMoveFirst");
 
-                return GetRecord(columnsObject, _busObject);
+                return GetRecord(columnsObject);
             }
             catch (Exception e)
             {
@@ -128,7 +82,7 @@ namespace Plugin_Sage.API
             // get metadata
             try
             {
-                var metadata = GetMetadata(_busObject);
+                var metadata = GetMetadata();
                 columnsObject = metadata.columnsObject;
                 recordCount = metadata.recordCount;
             }
@@ -158,7 +112,7 @@ namespace Plugin_Sage.API
                 do
                 {
                     // add record
-                    outList.Add(GetRecord(columnsObject, _busObject));
+                    outList.Add(GetRecord(columnsObject));
 
                     // move to next record
                     _busObject.InvokeMethod("nMoveNext");
@@ -181,20 +135,19 @@ namespace Plugin_Sage.API
         /// <summary>
         /// Gets the table metadata that the business object is connected to
         /// </summary>
-        /// <param name="busObject"></param>
         /// <returns>the columns of the table and the number of records in the table</returns>
-        private (string[] columnsObject, object recordCount) GetMetadata(DispatchObject busObject)
+        private (string[] columnsObject, object recordCount) GetMetadata()
         {
             // get metadata
             try
             {
-                var dataSources = busObject.InvokeMethod("sGetDataSources");
+                var dataSources = _busObject.InvokeMethod("sGetDataSources");
                 var dataSourcesObject = dataSources.ToString().Split(System.Convert.ToChar(352));
 
-                var columns = busObject.InvokeMethod("sGetColumns", dataSourcesObject[0]);
+                var columns = _busObject.InvokeMethod("sGetColumns",dataSourcesObject[0]);
                 var columnsObject = columns.ToString().Split(System.Convert.ToChar(352));
 
-                var recordCount = busObject.InvokeMethod("nGetRecordCount", dataSourcesObject[0]);
+                var recordCount = _busObject.InvokeMethod("nGetRecordCount",dataSourcesObject[0]);
 
                 return (columnsObject, recordCount);
             }
@@ -211,9 +164,8 @@ namespace Plugin_Sage.API
         /// Gets a record from the table the business object is connected to
         /// </summary>
         /// <param name="columnsObject"></param>
-        /// <param name="busObject"></param>
         /// <returns>A record object as a dictionary</returns>
-        private Dictionary<string, dynamic> GetRecord(string[] columnsObject, DispatchObject busObject)
+        private Dictionary<string, dynamic> GetRecord(string[] columnsObject)
         {
             // init output record
             var outDic = new Dictionary<string, dynamic>();
@@ -223,7 +175,7 @@ namespace Plugin_Sage.API
             {
                 // get single record
                 var data = new object[] {"", ""};
-                busObject.InvokeMethodByRef("nGetRecord", data);
+                _busObject.InvokeMethodByRef("nGetRecord", data);
                 var salesOrderObject = data[0].ToString().Split(System.Convert.ToChar(352));
 
                 for (var i = 0; i < columnsObject.Length; i++)
@@ -233,7 +185,7 @@ namespace Plugin_Sage.API
             }
             catch (Exception e)
             {
-                Logger.Error("Error getting record header");
+                Logger.Error("Error getting record");
                 Logger.Error(_session.GetError());
                 Logger.Error(e.Message);
                 throw;

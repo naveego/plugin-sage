@@ -7,18 +7,21 @@ using Newtonsoft.Json;
 using Plugin_Sage.API;
 using Plugin_Sage.DataContracts;
 using Plugin_Sage.Helper;
+using Plugin_Sage.Interfaces;
 using Pub;
 
 namespace Plugin_Sage.Plugin
 {
     public class Plugin : Publisher.PublisherBase
     {
+        private readonly Func<Settings, ISessionService> _sessionFactory;
         private readonly ServerStatus _server;
         private TaskCompletionSource<bool> _tcs;
-        private SessionService _sessionService;
+        private ISessionService _sessionService;
 
-        public Plugin()
+        public Plugin(Func<Settings, ISessionService> sessionFactory = null)
         {
+            _sessionFactory = sessionFactory ?? (s => new SessionService(s));
             _server = new ServerStatus();
         }
 
@@ -57,7 +60,7 @@ namespace Plugin_Sage.Plugin
             // attempt to create new session service object
             try
             {
-                _sessionService = new SessionService(settings);
+                _sessionService = _sessionFactory(settings);
                 _server.Connected = true;
             }
             catch (Exception e)
@@ -200,7 +203,7 @@ namespace Plugin_Sage.Plugin
                 var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(shape.PublisherMetaJson);
 
                 // get business object service for given module
-                var busObjectService = new BusinessObjectService(_sessionService, metaJsonObject.Module);
+                var busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
 
                 // get a single record
                 var records = busObjectService.GetAllRecords();
@@ -212,19 +215,19 @@ namespace Plugin_Sage.Plugin
                         Action = Record.Types.Action.Upsert,
                         DataJson = JsonConvert.SerializeObject(record)
                     };
-                    
-                    
+
+
                     // stop publishing if the limit flag is enabled and the limit has been reached or the server is disconnected
                     if ((limitFlag && recordsCount == limit) || !_server.Connected)
                     {
                         break;
                     }
-                    
+
                     // publish record
                     await responseStream.WriteAsync(recordOutput);
                     recordsCount++;
                 }
-                
+
                 Logger.Info($"Published {recordsCount} records");
             }
             catch (Exception e)
@@ -280,7 +283,8 @@ namespace Plugin_Sage.Plugin
                 };
 
                 // get business object service for given module
-                var busObjectService = new BusinessObjectService(_sessionService, module);
+                var busObjectService = _sessionService.MakeBusinessObject(module);
+                ;
 
                 // get a single record
                 var record = busObjectService.GetSingleRecord();
