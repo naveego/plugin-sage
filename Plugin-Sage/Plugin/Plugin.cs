@@ -83,6 +83,13 @@ namespace Plugin_Sage.Plugin
             });
         }
 
+        /// <summary>
+        /// Connects the session by forwarding requests to Connect
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="responseStream"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public override async Task ConnectSession(ConnectRequest request,
             IServerStreamWriter<ConnectResponse> responseStream, ServerCallContext context)
         {
@@ -178,7 +185,7 @@ namespace Plugin_Sage.Plugin
         /// <param name="responseStream"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        public override Task PublishStream(PublishRequest request, IServerStreamWriter<Record> responseStream,
+        public override async Task PublishStream(PublishRequest request, IServerStreamWriter<Record> responseStream,
             ServerCallContext context)
         {
             var shape = request.Shape;
@@ -187,7 +194,44 @@ namespace Plugin_Sage.Plugin
 
             Logger.Info($"Publishing records for shape: {shape.Name}");
 
-            return Task.CompletedTask;
+            try
+            {
+                var recordsCount = 0;
+                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(shape.PublisherMetaJson);
+
+                // get business object service for given module
+                var busObjectService = new BusinessObjectService(_sessionService, metaJsonObject.Module);
+
+                // get a single record
+                var records = busObjectService.GetAllRecords();
+
+                foreach (var record in records)
+                {
+                    var recordOutput = new Record
+                    {
+                        Action = Record.Types.Action.Upsert,
+                        DataJson = JsonConvert.SerializeObject(record)
+                    };
+                    
+                    
+                    // stop publishing if the limit flag is enabled and the limit has been reached or the server is disconnected
+                    if ((limitFlag && recordsCount == limit) || !_server.Connected)
+                    {
+                        break;
+                    }
+                    
+                    // publish record
+                    await responseStream.WriteAsync(recordOutput);
+                    recordsCount++;
+                }
+                
+                Logger.Info($"Published {recordsCount} records");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                throw;
+            }
         }
 
         /// <summary>
