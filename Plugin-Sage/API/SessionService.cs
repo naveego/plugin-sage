@@ -7,8 +7,8 @@ namespace Plugin_Sage.API
 {
     public class SessionService : ISessionService
     {
-        private DispatchObject _pvx;
-        private DispatchObject _oSS;
+        private IDispatchObject _pvx;
+        private IDispatchObject _oSS;
 
         /// <summary>
         /// Creates a session service based on the provided settings

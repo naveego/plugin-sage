@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using Newtonsoft.Json;
 using Plugin_Sage.Helper;
 using Plugin_Sage.Interfaces;
 
@@ -10,14 +8,14 @@ namespace Plugin_Sage.API
     public class BusinessObject : IBusinessObject
     {
         private readonly ISessionService _session;
-        private readonly DispatchObject _busObject;
+        private readonly IDispatchObject _busObject;
 
         /// <summary>
-        /// Creates a service without a preset business object
+        /// Creates a business object
         /// </summary>
         /// <param name="session"></param>
         /// <param name="busObject"></param>
-        public BusinessObject(ISessionService session, DispatchObject busObject)
+        public BusinessObject(ISessionService session, IDispatchObject busObject)
         {
             _session = session;
             _busObject = busObject;

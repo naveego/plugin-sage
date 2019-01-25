@@ -1,9 +1,10 @@
 using System;
 using System.Reflection;
+using Plugin_Sage.Interfaces;
 
 namespace Plugin_Sage.API
 {
-    public class DispatchObject : IDisposable
+    public class DispatchObject : IDispatchObject
     {
         protected object m_object = null;
 
