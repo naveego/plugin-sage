@@ -15,7 +15,7 @@
   "configSchema": {
     "ui": {
       "ui:order": ["Username", "Password", "CompanyCode", "HomePath", "ModulesList"],
-      "password": {
+      "Password": {
         "ui:widget": "password"
       },
       "ModulesList": {
