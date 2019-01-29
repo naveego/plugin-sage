@@ -43,7 +43,7 @@ namespace Plugin_Sage.Helper
                     BusObjectName = "CI_ItemCode_bus";
                     TaskName = "CI_ItemCode_ui";
                     return;
-                case "Shipping Address":
+                case "Shipping Addresses":
                     Module = "S/O";
                     BusObjectName = "SO_ShipToAddress_bus";
                     TaskName = "SO_ShipToAddress_ui";

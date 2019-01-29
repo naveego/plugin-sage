@@ -60,7 +60,7 @@
               "Invoice History",
               "Invoice History Detail",
               "Item Information",
-              "Shipping Address"
+              "Shipping Addresses"
             ]
           },
           "uniqueItems": true
