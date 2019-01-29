@@ -293,20 +293,23 @@ namespace Plugin_Sage.Plugin
                 var propId = 0;
                 foreach (var col in record)
                 {
-                    var property = new Property
+                    if (!string.IsNullOrEmpty(col.Key))
                     {
-                        Id = propId.ToString(),
-                        Name = col.Key,
-                        Type = GetPropertyType(col.Value),
-                        IsKey = false,
-                        IsCreateCounter = false,
-                        IsUpdateCounter = false,
-                        TypeAtSource = "",
-                        IsNullable = true
-                    };
+                        var property = new Property
+                        {
+                            Id = propId.ToString(),
+                            Name = col.Key,
+                            Type = GetPropertyType(col.Value),
+                            IsKey = false,
+                            IsCreateCounter = false,
+                            IsUpdateCounter = false,
+                            TypeAtSource = "",
+                            IsNullable = true
+                        };
 
-                    shape.Properties.Add(property);
-                    propId++;
+                        shape.Properties.Add(property);
+                        propId++;
+                    }
                 }
 
                 return Task.FromResult(shape);

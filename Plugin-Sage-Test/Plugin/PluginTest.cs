@@ -39,7 +39,8 @@ namespace Plugin_Sage_Test.Plugin
                             {"col", "test value"},
                             {"col2", "1"},
                             {"col3", "1.45"},
-                            {"col4", "true"}
+                            {"col4", "true"},
+                            {"", ""}
                         });
                         mockBusObject.Setup(b => b.GetAllRecords()).Returns(new List<Dictionary<string, dynamic>>
                         {
@@ -55,7 +56,8 @@ namespace Plugin_Sage_Test.Plugin
                                 {"col", "test value"},
                                 {"col2", "1"},
                                 {"col3", "1.45"},
-                                {"col4", "true"}
+                                {"col4", "true"},
+                                {"", ""}
                             },
                         });
 
@@ -163,6 +165,7 @@ namespace Plugin_Sage_Test.Plugin
             // assert
             Assert.IsType<DiscoverShapesResponse>(response);
             Assert.Single(response.Shapes);
+            Assert.Equal(4, response.Shapes[0].Properties.Count);
 
             // cleanup
             await channel.ShutdownAsync();
