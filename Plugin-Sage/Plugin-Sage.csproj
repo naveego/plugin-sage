@@ -33,7 +33,7 @@
         <Copy SourceFiles="@(Icon)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" />
         <Copy SourceFiles="@(Manifest)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" />
         <Copy SourceFiles="@(License)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" />
-        <Delete Files="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\plugin-zoho_1.0.0_windows_amd64.zip" />
+        <Delete Files="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\plugin-sage_1.0.0_windows_amd64.zip" />
         <ZipDirectory SourceDirectory="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" DestinationFile="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\plugin-sage_1.0.0_windows_amd64.zip" />
     </Target>
 
