@@ -1,0 +1,72 @@
+{
+  "id": "plugin-sage",
+  "displayName": "Sage Publisher",
+  "description": "Publisher which pulls data from a Sage instance. Agent must be installed on the Sage instance server.",
+  "versionDescription": "Version 1",
+  "version": "1.0.0",
+  "iconFile": "icon.jpeg",
+  "executable": "Plugin-Sage",
+  "kind": "publisher",
+  "os": "$GOOS",
+  "arch": "$GOARCH",
+  "canProduceMultipleSchemas": true,
+  "canAcceptQueryBasedSchemas": false,
+  "canUseOAuth": false,
+  "configSchema": {
+    "ui": {
+      "ui:order": ["Username", "Password", "CompanyCode", "HomePath", "ModulesList"],
+      "Password": {
+        "ui:widget": "password"
+      },
+      "ModulesList": {
+        "ui:widget": "checkboxes",
+        "ui:options": {
+          "inline": true
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "properties": {
+        "Username": {
+          "type": "string",
+          "title": "Username",
+          "description": "The username to login to Sage"
+        },
+        "Password": {
+          "type": "string",
+          "title": "Password",
+          "description": "The password to login to Sage"
+        },
+        "CompanyCode": {
+          "type": "string",
+          "title": "Company Code",
+          "description": "The company code of the company in Sage"
+        },
+        "HomePath": {
+          "type": "string",
+          "title": "Sage 100 Home Path",
+          "description": "Local path to the MAS100/HOME directory (ex. C:\\Sage\\Sage 100 Advanced\\MAS90\\Home)"
+        },
+        "ModulesList": {
+          "type": "array",
+          "title": "Modules",
+          "description": "List of modules available to discover in Sage",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Sales Orders",
+              "Customer Information",
+              "Invoice History",
+              "Invoice History Detail",
+              "Item Information",
+              "Shipping Addresses"
+            ]
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": ["Username", "Password", "CompanyCode", "HomePath"]
+    }
+  }
+}
