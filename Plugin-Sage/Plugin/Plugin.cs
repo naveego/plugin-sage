@@ -284,20 +284,18 @@ namespace Plugin_Sage.Plugin
 
                 // get business object service for given module
                 var busObjectService = _sessionService.MakeBusinessObject(module);
-                ;
 
                 // get a single record
                 var record = busObjectService.GetSingleRecord();
 
                 // assign all properties of record to shape
-                var propId = 0;
                 foreach (var col in record)
                 {
                     if (!string.IsNullOrEmpty(col.Key))
                     {
                         var property = new Property
                         {
-                            Id = propId.ToString(),
+                            Id = col.Key,
                             Name = col.Key,
                             Type = GetPropertyType(col.Value),
                             IsKey = false,
@@ -308,7 +306,6 @@ namespace Plugin_Sage.Plugin
                         };
 
                         shape.Properties.Add(property);
-                        propId++;
                     }
                 }
 
