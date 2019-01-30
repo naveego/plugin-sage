@@ -24,6 +24,9 @@ namespace Plugin_Sage
                 {
                     Logger.Error($"died: {eventArgs.ExceptionObject}");
                 };
+                
+                // clean old logs on start up
+                Logger.Clean();
 
                 // create new server and start it
                 Server server = new Server
