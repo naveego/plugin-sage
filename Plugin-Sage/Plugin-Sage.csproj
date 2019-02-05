@@ -4,7 +4,7 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp2.2</TargetFramework>
         <RootNamespace>Plugin_Sage</RootNamespace>
-        <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
+        <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     </PropertyGroup>
 
     <ItemGroup>
@@ -29,16 +29,16 @@
         <Folder Include="Publisher" />
     </ItemGroup>
 
-    <Target Name="ZipWindows" AfterTargets="Publish" Condition="$(Configuration) == 'Release' And Exists('$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish')">
-        <Copy SourceFiles="@(Icon)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" />
-        <Copy SourceFiles="@(Manifest)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" />
-        <Copy SourceFiles="@(License)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" />
-        <Delete Files="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\plugin-sage_1.0.0_windows_amd64.zip" />
-        <ZipDirectory SourceDirectory="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\publish" DestinationFile="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\plugin-sage_1.0.0_windows_amd64.zip" />
+    <Target Name="ZipWindows" AfterTargets="Publish" Condition="$(Configuration) == 'Release' And Exists('$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\publish')">
+        <Copy SourceFiles="@(Icon)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\publish" />
+        <Copy SourceFiles="@(Manifest)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\publish" />
+        <Copy SourceFiles="@(License)" DestinationFolder="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\publish" />
+        <Delete Files="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\plugin-sage_1.0.0_windows_amd64.zip" />
+        <ZipDirectory SourceDirectory="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\publish" DestinationFile="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\plugin-sage_1.0.0_windows_amd64.zip" />
     </Target>
 
     <Target Name="CleanZip" AfterTargets="Clean">
-        <Delete Files="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win10-x64\plugin-sage_1.0.0_windows_amd64.zip" />
+        <Delete Files="$(MSBuildProjectDirectory)\bin\Release\netcoreapp2.2\win-x64\plugin-sage_1.0.0_windows_amd64.zip" />
     </Target>
     
 </Project>
