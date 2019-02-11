@@ -373,6 +373,8 @@ namespace Plugin_Sage.Plugin
 
                 // get a single record
                 var record = busObjectService.GetSingleRecord();
+                var keys = busObjectService.GetKeys();
+                var key = keys[0];
 
                 // assign all properties of record to shape
                 foreach (var col in record)
@@ -384,7 +386,7 @@ namespace Plugin_Sage.Plugin
                             Id = col.Key,
                             Name = col.Key,
                             Type = GetPropertyType(col.Value),
-                            IsKey = false,
+                            IsKey = col.Key == key,
                             IsCreateCounter = false,
                             IsUpdateCounter = false,
                             TypeAtSource = "",

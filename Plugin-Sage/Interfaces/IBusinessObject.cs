@@ -8,5 +8,6 @@ namespace Plugin_Sage.Interfaces
         List<Dictionary<string, dynamic>> GetAllRecords();
         Dictionary<string, dynamic> GetSingleRecord();
         string UpdateSingleRecord(Record record);
+        string[] GetKeys();
     }
 }

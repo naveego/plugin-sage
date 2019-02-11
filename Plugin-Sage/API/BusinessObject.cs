@@ -141,7 +141,7 @@ namespace Plugin_Sage.API
         public string UpdateSingleRecord(Record record)
         {
             Dictionary<string, dynamic> recordObject;
-            string[] keyColumnsObject;
+            string[] keyColumnsObject = GetKeys();
             
             // convert record json into object
             try
@@ -150,20 +150,6 @@ namespace Plugin_Sage.API
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
-                throw;
-            }
-            
-            // get key columns for current business object
-            try
-            {
-                var keyColumns = _busObject.InvokeMethod("sGetKeyColumns");
-                keyColumnsObject = keyColumns.ToString().Split(System.Convert.ToChar(352));
-            }
-            catch (Exception e)
-            {
-                Logger.Error("Error updating single record");
-                Logger.Error(_session.GetError());
                 Logger.Error(e.Message);
                 throw;
             }
@@ -204,6 +190,28 @@ namespace Plugin_Sage.API
             }
             
             return "";
+        }
+
+        /// <summary>
+        /// Gets the keys for the current business object
+        /// </summary>
+        /// <returns></returns>
+        public string[] GetKeys()
+        {
+            // get key columns for current business object
+            try
+            {
+                var keyColumns = _busObject.InvokeMethod("sGetKeyColumns");
+                var keyColumnsObject = keyColumns.ToString().Split(System.Convert.ToChar(352));
+                return keyColumnsObject;
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error updating single record");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
         }
 
         /// <summary>
