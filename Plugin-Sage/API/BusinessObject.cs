@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Plugin_Sage.Helper;
 using Plugin_Sage.Interfaces;
+using Pub;
 
 namespace Plugin_Sage.API
 {
@@ -131,6 +134,79 @@ namespace Plugin_Sage.API
         }
 
         /// <summary>
+        /// Writes a record back to Sage
+        /// </summary>
+        /// <param name="record"></param>
+        /// <returns></returns>
+        public string UpdateSingleRecord(Record record)
+        {
+            Dictionary<string, dynamic> recordObject;
+            string[] keyColumnsObject;
+            
+            // convert record json into object
+            try
+            {
+                recordObject = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(record.DataJson);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                throw;
+            }
+            
+            // get key columns for current business object
+            try
+            {
+                var keyColumns = _busObject.InvokeMethod("sGetKeyColumns");
+                keyColumnsObject = keyColumns.ToString().Split(System.Convert.ToChar(352));
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error updating single record");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+
+            // set key column value to enable editing of record
+            try
+            {
+                var key = keyColumnsObject[0];
+                var keyRecord = recordObject[key];
+                _busObject.InvokeMethod("nSetKeyValue", key, keyRecord.ToString());
+                _busObject.InvokeMethod("nSetKey");
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error updating single record");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+
+            // write out all other columns
+            try
+            {
+                // remove key column as it is already set
+                recordObject.Remove(keyColumnsObject[0]);
+
+                foreach (var col in recordObject)
+                {
+                    _busObject.InvokeMethod("nSetValue", col.Key, col.Value.ToString());
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error updating single record");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                return _session.GetError();
+            }
+            
+            return "";
+        }
+
+        /// <summary>
         /// Gets the table metadata that the business object is connected to
         /// </summary>
         /// <returns>the columns of the table and the number of records in the table</returns>
@@ -142,10 +218,10 @@ namespace Plugin_Sage.API
                 var dataSources = _busObject.InvokeMethod("sGetDataSources");
                 var dataSourcesObject = dataSources.ToString().Split(System.Convert.ToChar(352));
 
-                var columns = _busObject.InvokeMethod("sGetColumns",dataSourcesObject[0]);
+                var columns = _busObject.InvokeMethod("sGetColumns", dataSourcesObject[0]);
                 var columnsObject = columns.ToString().Split(System.Convert.ToChar(352));
 
-                var recordCount = _busObject.InvokeMethod("nGetRecordCount",dataSourcesObject[0]);
+                var recordCount = _busObject.InvokeMethod("nGetRecordCount", dataSourcesObject[0]);
 
                 return (columnsObject, recordCount);
             }

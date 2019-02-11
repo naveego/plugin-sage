@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Newtonsoft.Json;
@@ -238,6 +239,91 @@ namespace Plugin_Sage.Plugin
         }
 
         /// <summary>
+        /// Prepares the plugin to handle a write request
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override Task<PrepareWriteResponse> PrepareWrite(PrepareWriteRequest request, ServerCallContext context)
+        {
+            _server.WriteConfigured = false;
+
+            var writeSettings = new WriteSettings
+            {
+                CommitSLA = request.CommitSlaSeconds,
+                Schema = request.Schema
+            };
+
+            _server.WriteSettings = writeSettings;
+            _server.WriteConfigured = true;
+
+            return Task.FromResult(new PrepareWriteResponse());
+        }
+        
+        /// <summary>
+        /// Takes in records and writes them out to the Sage instance then sends acks back to the client
+        /// </summary>
+        /// <param name="requestStream"></param>
+        /// <param name="responseStream"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public override async Task WriteStream(IAsyncStreamReader<Record> requestStream,
+            IServerStreamWriter<RecordAck> responseStream, ServerCallContext context)
+        {
+            try
+            {
+                Logger.Info("Writing records to Sage...");
+                var schema = _server.WriteSettings.Schema;
+                var sla = _server.WriteSettings.CommitSLA;
+                var inCount = 0;
+                var outCount = 0;
+                
+                // get next record to publish while connected and configured
+                while (await requestStream.MoveNext(CancellationToken.None) && _server.Connected && _server.WriteConfigured)
+                {
+                    var record = requestStream.Current;
+                    inCount++;
+                    
+                    // send record to source system
+                    // timeout if it takes longer than the sla
+                    var task = Task.Run(() => PutRecord(schema,record));
+                    if (task.Wait(TimeSpan.FromSeconds(sla)))
+                    {
+                        // send ack
+                        var ack = new RecordAck
+                        {
+                            CorrelationId = record.CorrelationId,
+                            Error = task.Result
+                        };
+                        await responseStream.WriteAsync(ack);
+                        
+                        if (String.IsNullOrEmpty(task.Result))
+                        {
+                            outCount++;
+                        }
+                    }
+                    else
+                    {
+                        // send timeout ack
+                        var ack = new RecordAck
+                        {
+                            CorrelationId = record.CorrelationId,
+                            Error = "timed out"
+                        };
+                        await responseStream.WriteAsync(ack);
+                    }
+                }
+                
+                Logger.Info($"Wrote {outCount} of {inCount} records to Sage.");
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Handles disconnect requests from the agent
         /// </summary>
         /// <param name="request"></param>
@@ -364,6 +450,32 @@ namespace Plugin_Sage.Plugin
 
                 Logger.Error(e.Message);
                 throw;
+            }
+        }
+        
+        /// <summary>
+        /// Writes a record out to Sage
+        /// </summary>
+        /// <param name="schema"></param>
+        /// <param name="record"></param>
+        /// <returns></returns>
+        private Task<string> PutRecord(Schema schema, Record record)
+        {
+            try
+            {
+                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
+                
+                // get business object service for given module
+                var busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
+
+                var error = busObjectService.UpdateSingleRecord(record);
+
+                return Task.FromResult(error);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                return Task.FromResult(e.Message);
             }
         }
     }

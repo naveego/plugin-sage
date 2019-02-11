@@ -45,6 +45,8 @@ namespace Plugin_Sage
                 Logger.Info("Started on port " + server.Ports.First().BoundPort);
 
                 // wait to exit until given input
+                while (true){
+                }
                 Console.ReadLine();
 
                 Logger.Info("Plugin exiting...");
