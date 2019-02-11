@@ -136,7 +136,7 @@ namespace Plugin_Sage_Test.Plugin
         }
 
         [Fact]
-        public async Task DiscoverShapesAllTest()
+        public async Task DiscoverSchemasAllTest()
         {
             // setup
             Server server = new Server
@@ -153,19 +153,19 @@ namespace Plugin_Sage_Test.Plugin
 
             var connectRequest = GetConnectSettings();
 
-            var request = new DiscoverShapesRequest
+            var request = new DiscoverSchemasRequest
             {
-                Mode = DiscoverShapesRequest.Types.Mode.All,
+                Mode = DiscoverSchemasRequest.Types.Mode.All,
             };
 
             // act
             client.Connect(connectRequest);
-            var response = client.DiscoverShapes(request);
+            var response = client.DiscoverSchemas(request);
 
             // assert
-            Assert.IsType<DiscoverShapesResponse>(response);
-            Assert.Single(response.Shapes);
-            Assert.Equal(4, response.Shapes[0].Properties.Count);
+            Assert.IsType<DiscoverSchemasResponse>(response);
+            Assert.Single(response.Schemas);
+            Assert.Equal(4, response.Schemas[0].Properties.Count);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -173,7 +173,7 @@ namespace Plugin_Sage_Test.Plugin
         }
 
         [Fact]
-        public async Task DiscoverShapesRefreshTest()
+        public async Task DiscoverSchemasRefreshTest()
         {
             // setup
             Server server = new Server
@@ -190,10 +190,10 @@ namespace Plugin_Sage_Test.Plugin
 
             var connectRequest = GetConnectSettings();
 
-            var request = new DiscoverShapesRequest
+            var request = new DiscoverSchemasRequest
             {
-                Mode = DiscoverShapesRequest.Types.Mode.Refresh,
-                ToRefresh = {new Shape
+                Mode = DiscoverSchemasRequest.Types.Mode.Refresh,
+                ToRefresh = {new Schema
                 {
                     Id = "3",
                     PublisherMetaJson = "{\"Module\":\"test module\"}"
@@ -202,11 +202,11 @@ namespace Plugin_Sage_Test.Plugin
 
             // act
             client.Connect(connectRequest);
-            var response = client.DiscoverShapes(request);
+            var response = client.DiscoverSchemas(request);
 
             // assert
-            Assert.IsType<DiscoverShapesResponse>(response);
-            Assert.Single(response.Shapes);
+            Assert.IsType<DiscoverSchemasResponse>(response);
+            Assert.Single(response.Schemas);
 
             // cleanup
             await channel.ShutdownAsync();
@@ -214,7 +214,7 @@ namespace Plugin_Sage_Test.Plugin
         }
 
         [Fact]
-        public async Task PublishStreamTest()
+        public async Task ReadStreamTest()
         {
             // setup
             Server server = new Server
@@ -231,9 +231,9 @@ namespace Plugin_Sage_Test.Plugin
 
             var connectRequest = GetConnectSettings();
 
-            var request = new PublishRequest()
+            var request = new ReadRequest()
             {
-                Shape = new Shape
+                Schema = new Schema
                 {
                     Id = "3",
                     PublisherMetaJson = "{\"Module\":\"test module\"}"
@@ -242,7 +242,7 @@ namespace Plugin_Sage_Test.Plugin
 
             // act
             client.Connect(connectRequest);
-            var response = client.PublishStream(request);
+            var response = client.ReadStream(request);
             var responseStream = response.ResponseStream;
             var records = new List<Record>();
 
@@ -260,7 +260,7 @@ namespace Plugin_Sage_Test.Plugin
         }
 
         [Fact]
-        public async Task PublishStreamLimitTest()
+        public async Task ReadStreamLimitTest()
         {
             // setup
             Server server = new Server
@@ -277,9 +277,9 @@ namespace Plugin_Sage_Test.Plugin
 
             var connectRequest = GetConnectSettings();
 
-            var request = new PublishRequest()
+            var request = new ReadRequest()
             {
-                Shape = new Shape
+                Schema = new Schema
                 {
                     Id = "3",
                     PublisherMetaJson = "{\"Module\":\"test module\"}"
@@ -289,7 +289,7 @@ namespace Plugin_Sage_Test.Plugin
 
             // act
             client.Connect(connectRequest);
-            var response = client.PublishStream(request);
+            var response = client.ReadStream(request);
             var responseStream = response.ResponseStream;
             var records = new List<Record>();
 

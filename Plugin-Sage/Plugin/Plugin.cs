@@ -120,15 +120,15 @@ namespace Plugin_Sage.Plugin
         /// <param name="request"></param>
         /// <param name="context"></param>
         /// <returns>Discovered shapes</returns>
-        public override async Task<DiscoverShapesResponse> DiscoverShapes(DiscoverShapesRequest request,
+        public override async Task<DiscoverSchemasResponse> DiscoverSchemas(DiscoverSchemasRequest request,
             ServerCallContext context)
         {
             Logger.Info("Discovering Shapes...");
 
-            DiscoverShapesResponse discoverShapesResponse = new DiscoverShapesResponse();
+            DiscoverSchemasResponse discoverShapesResponse = new DiscoverSchemasResponse();
 
             // only return requested shapes if refresh mode selected
-            if (request.Mode == DiscoverShapesRequest.Types.Mode.Refresh)
+            if (request.Mode == DiscoverSchemasRequest.Types.Mode.Refresh)
             {
                 try
                 {
@@ -145,10 +145,10 @@ namespace Plugin_Sage.Plugin
 
                     await Task.WhenAll(tasks);
 
-                    discoverShapesResponse.Shapes.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
+                    discoverShapesResponse.Schemas.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
 
                     // return all shapes 
-                    Logger.Info($"Shapes returned: {discoverShapesResponse.Shapes.Count}");
+                    Logger.Info($"Shapes returned: {discoverShapesResponse.Schemas.Count}");
                     return discoverShapesResponse;
                 }
                 catch (Exception e)
@@ -168,10 +168,10 @@ namespace Plugin_Sage.Plugin
 
                 await Task.WhenAll(tasks);
 
-                discoverShapesResponse.Shapes.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
+                discoverShapesResponse.Schemas.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
 
                 // return all shapes 
-                Logger.Info($"Shapes returned: {discoverShapesResponse.Shapes.Count}");
+                Logger.Info($"Shapes returned: {discoverShapesResponse.Schemas.Count}");
                 return discoverShapesResponse;
             }
             catch (Exception e)
@@ -188,10 +188,10 @@ namespace Plugin_Sage.Plugin
         /// <param name="responseStream"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        public override async Task PublishStream(PublishRequest request, IServerStreamWriter<Record> responseStream,
+        public override async Task ReadStream(ReadRequest request, IServerStreamWriter<Record> responseStream,
             ServerCallContext context)
         {
-            var shape = request.Shape;
+            var shape = request.Schema;
             var limit = request.Limit;
             var limitFlag = request.Limit != 0;
 
@@ -266,12 +266,12 @@ namespace Plugin_Sage.Plugin
         /// <param name="module"></param>
         /// <param name="id"></param>
         /// <returns>returns a shape or null if unavailable</returns>
-        private Task<Shape> GetShapeForModule(string module, string id)
+        private Task<Schema> GetShapeForModule(string module, string id)
         {
             try
             {
                 // base shape to be added to
-                var shape = new Shape
+                var shape = new Schema
                 {
                     Id = id,
                     Name = module,
