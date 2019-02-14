@@ -66,10 +66,14 @@ namespace Plugin_Sage_Test.Plugin
                         });
 
                         var records = GetTestRecords();
+                        var schema = GetTestSchema();
                         
                         mockBusObject.Setup(b => b.UpdateSingleRecord(records[0])).Returns("");
                         mockBusObject.Setup(b => b.UpdateSingleRecord(records[1])).Returns("error");
 
+                        mockBusObject.Setup(b => b.IsSourceNewer(records[0], schema)).Returns(false);
+                        mockBusObject.Setup(b => b.IsSourceNewer(records[0], schema)).Returns(false);
+                        
                         return mockBusObject.Object;
                     });
                     
@@ -91,6 +95,23 @@ namespace Plugin_Sage_Test.Plugin
                 {
                     CorrelationId = "more-test",
                     DataJson = "{}"
+                }
+            };
+        }
+
+        private Schema GetTestSchema()
+        {
+            return new Schema
+            {
+                Name = "test",
+                PublisherMetaJson = "{\"Module\":\"test module\"}",
+                Properties =
+                {
+                    new Property
+                    {
+                        Id = "DATEUPDATED$",
+                        IsUpdateCounter = true
+                    }
                 }
             };
         }
@@ -393,11 +414,7 @@ namespace Plugin_Sage_Test.Plugin
 
             var prepareRequest = new PrepareWriteRequest()
             {
-                Schema = new Schema
-                {
-                    Name = "test",
-                    PublisherMetaJson = "{\"Module\":\"test module\"}"
-                },
+                Schema = GetTestSchema(),
                 CommitSlaSeconds = 1
             };
 

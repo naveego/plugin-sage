@@ -259,7 +259,7 @@ namespace Plugin_Sage.Plugin
 
             return Task.FromResult(new PrepareWriteResponse());
         }
-        
+
         /// <summary>
         /// Takes in records and writes them out to the Sage instance then sends acks back to the client
         /// </summary>
@@ -277,16 +277,17 @@ namespace Plugin_Sage.Plugin
                 var sla = _server.WriteSettings.CommitSLA;
                 var inCount = 0;
                 var outCount = 0;
-                
+
                 // get next record to publish while connected and configured
-                while (await requestStream.MoveNext(CancellationToken.None) && _server.Connected && _server.WriteConfigured)
+                while (await requestStream.MoveNext(CancellationToken.None) && _server.Connected &&
+                       _server.WriteConfigured)
                 {
                     var record = requestStream.Current;
                     inCount++;
-                    
+
                     // send record to source system
                     // timeout if it takes longer than the sla
-                    var task = Task.Run(() => PutRecord(schema,record));
+                    var task = Task.Run(() => PutRecord(schema, record));
                     if (task.Wait(TimeSpan.FromSeconds(sla)))
                     {
                         // send ack
@@ -296,7 +297,7 @@ namespace Plugin_Sage.Plugin
                             Error = task.Result
                         };
                         await responseStream.WriteAsync(ack);
-                        
+
                         if (String.IsNullOrEmpty(task.Result))
                         {
                             outCount++;
@@ -313,7 +314,7 @@ namespace Plugin_Sage.Plugin
                         await responseStream.WriteAsync(ack);
                     }
                 }
-                
+
                 Logger.Info($"Wrote {outCount} of {inCount} records to Sage.");
             }
             catch (Exception e)
@@ -387,10 +388,10 @@ namespace Plugin_Sage.Plugin
                             Name = col.Key,
                             Type = GetPropertyType(col.Value),
                             IsKey = col.Key == key,
-                            IsCreateCounter = false,
-                            IsUpdateCounter = false,
+                            IsCreateCounter = col.Key == "DATECREATED$",
+                            IsUpdateCounter = col.Key == "DATEUPDATED$",
                             TypeAtSource = "",
-                            IsNullable = true
+                            IsNullable = col.Key != key
                         };
 
                         shape.Properties.Add(property);
@@ -454,7 +455,7 @@ namespace Plugin_Sage.Plugin
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Writes a record out to Sage
         /// </summary>
@@ -463,13 +464,34 @@ namespace Plugin_Sage.Plugin
         /// <returns></returns>
         private Task<string> PutRecord(Schema schema, Record record)
         {
+            IBusinessObject busObjectService;
             try
             {
-                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
-                
                 // get business object service for given module
-                var busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
-
+                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
+                busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                return Task.FromResult(e.Message);
+            }
+            try
+            {
+                // check if source is newer than requested write back
+                if (busObjectService.IsSourceNewer(record, schema))
+                {
+                    return Task.FromResult("source system is newer than requested write back");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                return Task.FromResult(e.Message);
+            }
+            try
+            {
+                // update record
                 var error = busObjectService.UpdateSingleRecord(record);
 
                 return Task.FromResult(error);

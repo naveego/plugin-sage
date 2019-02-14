@@ -9,5 +9,6 @@ namespace Plugin_Sage.Interfaces
         Dictionary<string, dynamic> GetSingleRecord();
         string UpdateSingleRecord(Record record);
         string[] GetKeys();
+        bool IsSourceNewer(Record record, Schema schema);
     }
 }
