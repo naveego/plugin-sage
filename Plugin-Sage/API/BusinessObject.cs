@@ -129,6 +129,28 @@ namespace Plugin_Sage.API
                 throw;
             }
         }
+        
+        /// <summary>
+        /// Gets the keys for the current business object
+        /// </summary>
+        /// <returns></returns>
+        public string[] GetKeys()
+        {
+            // get key columns for current business object
+            try
+            {
+                var keyColumns = _busObject.InvokeMethod("sGetKeyColumns");
+                var keyColumnsObject = keyColumns.ToString().Split(System.Convert.ToChar(352));
+                return keyColumnsObject;
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error updating single record");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+        }
 
         /// <summary>
         /// Gets the table metadata that the business object is connected to
