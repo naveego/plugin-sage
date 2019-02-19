@@ -77,6 +77,12 @@ namespace Plugin_Sage.API
                 _oSS.InvokeMethod("nSetProgram",taskId);
                 var busObject = new DispatchObject(_pvx.InvokeMethod("NewObject", config.BusObjectName, _oSS.GetObject()));
 
+                if (config.IsDetails)
+                {
+                    var linesBusObject = new DispatchObject(busObject.GetProperty("oLines"));
+                    return new BusinessObject(this, linesBusObject);
+                }
+
                 return new BusinessObject(this, busObject);
             }
             catch (Exception e)
