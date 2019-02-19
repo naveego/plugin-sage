@@ -56,6 +56,7 @@
             "type": "string",
             "enum": [
               "Sales Orders",
+              "Sales Order Details",
               "Customer Information",
               "Invoice History",
               "Invoice History Detail",
