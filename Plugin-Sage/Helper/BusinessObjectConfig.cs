@@ -45,9 +45,9 @@ namespace Plugin_Sage.Helper
                     return;
                 case "Invoice History Detail":
                     Module = "A/R";
-                    BusObjectName = "AR_InvoiceHistoryInquiry_bus";
+                    BusObjectName = "AR_InvoiceHistoryInquiryDetail_bus";
                     TaskName = "AR_InvoiceHistoryInquiry_ui";
-                    IsDetails = true;
+                    IsDetails = false;
                     return;
                 case "Item Information":
                     Module = "C/I";
