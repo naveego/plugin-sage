@@ -23,7 +23,7 @@ namespace Plugin_Sage.Helper
                     BusObjectName = "SO_SalesOrder_bus";
                     TaskName = "SO_SalesOrder_ui";
                     return;
-                case "Sales Order Detail":
+                case "Sales Order Details":
                     Module = "S/O";
                     BusObjectName = "SO_SalesOrderDetail_bus";
                     TaskName = "SO_SalesOrder_ui";
