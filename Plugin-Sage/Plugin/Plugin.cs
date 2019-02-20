@@ -366,7 +366,8 @@ namespace Plugin_Sage.Plugin
                     PublisherMetaJson = JsonConvert.SerializeObject(new PublisherMetaJson
                     {
                         Module = module
-                    })
+                    }),
+                    DataFlowDirection = Schema.Types.DataFlowDirection.ReadWrite
                 };
 
                 // get business object service for given module
