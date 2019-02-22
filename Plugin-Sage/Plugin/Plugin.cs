@@ -116,41 +116,41 @@ namespace Plugin_Sage.Plugin
 
 
         /// <summary>
-        /// Discovers shapes located in the users Zoho CRM instance
+        /// Discovers schemas located in the users Zoho CRM instance
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
-        /// <returns>Discovered shapes</returns>
+        /// <returns>Discovered schemas</returns>
         public override async Task<DiscoverSchemasResponse> DiscoverSchemas(DiscoverSchemasRequest request,
             ServerCallContext context)
         {
-            Logger.Info("Discovering Shapes...");
+            Logger.Info("Discovering Schemas...");
 
-            DiscoverSchemasResponse discoverShapesResponse = new DiscoverSchemasResponse();
+            DiscoverSchemasResponse discoverSchemasResponse = new DiscoverSchemasResponse();
 
-            // only return requested shapes if refresh mode selected
+            // only return requested schemas if refresh mode selected
             if (request.Mode == DiscoverSchemasRequest.Types.Mode.Refresh)
             {
                 try
                 {
-                    var refreshShapes = request.ToRefresh;
+                    var refreshSchemas = request.ToRefresh;
 
-                    Logger.Info($"Refresh shapes attempted: {refreshShapes.Count}");
+                    Logger.Info($"Refresh schemas attempted: {refreshSchemas.Count}");
 
-                    var tasks = refreshShapes.Select((s) =>
+                    var tasks = refreshSchemas.Select((s) =>
                         {
                             var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(s.PublisherMetaJson);
-                            return GetShapeForModule(metaJsonObject.Module, s.Id);
+                            return GetSchemaForModule(metaJsonObject.Module);
                         })
                         .ToArray();
 
                     await Task.WhenAll(tasks);
 
-                    discoverShapesResponse.Schemas.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
+                    discoverSchemasResponse.Schemas.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
 
-                    // return all shapes 
-                    Logger.Info($"Shapes returned: {discoverShapesResponse.Schemas.Count}");
-                    return discoverShapesResponse;
+                    // return all schemas 
+                    Logger.Info($"Schemas returned: {discoverSchemasResponse.Schemas.Count}");
+                    return discoverSchemasResponse;
                 }
                 catch (Exception e)
                 {
@@ -159,21 +159,21 @@ namespace Plugin_Sage.Plugin
                 }
             }
 
-            // attempt to get a shape for each module requested
+            // attempt to get a schema for each module requested
             try
             {
-                Logger.Info($"Shapes attempted: {_server.Settings.ModulesList.Length}");
+                Logger.Info($"Schemas attempted: {_server.Settings.ModulesList.Length}");
 
-                var tasks = _server.Settings.ModulesList.Select((m, i) => GetShapeForModule(m, i.ToString()))
+                var tasks = _server.Settings.ModulesList.Select(GetSchemaForModule)
                     .ToArray();
 
                 await Task.WhenAll(tasks);
 
-                discoverShapesResponse.Schemas.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
+                discoverSchemasResponse.Schemas.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
 
-                // return all shapes 
-                Logger.Info($"Shapes returned: {discoverShapesResponse.Schemas.Count}");
-                return discoverShapesResponse;
+                // return all schema 
+                Logger.Info($"Schemas returned: {discoverSchemasResponse.Schemas.Count}");
+                return discoverSchemasResponse;
             }
             catch (Exception e)
             {
@@ -183,7 +183,7 @@ namespace Plugin_Sage.Plugin
         }
 
         /// <summary>
-        /// Publishes a stream of data for a given shape
+        /// Publishes a stream of data for a given schema
         /// </summary>
         /// <param name="request"></param>
         /// <param name="responseStream"></param>
@@ -192,16 +192,16 @@ namespace Plugin_Sage.Plugin
         public override async Task ReadStream(ReadRequest request, IServerStreamWriter<Record> responseStream,
             ServerCallContext context)
         {
-            var shape = request.Schema;
+            var schema = request.Schema;
             var limit = request.Limit;
             var limitFlag = request.Limit != 0;
 
-            Logger.Info($"Publishing records for shape: {shape.Name}");
+            Logger.Info($"Publishing records for schema: {schema.Name}");
 
             try
             {
                 var recordsCount = 0;
-                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(shape.PublisherMetaJson);
+                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
 
                 // get business object service for given module
                 var busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
@@ -348,19 +348,18 @@ namespace Plugin_Sage.Plugin
         }
 
         /// <summary>
-        /// Gets a shape for a given module
+        /// Gets a schema for a given module
         /// </summary>
         /// <param name="module"></param>
-        /// <param name="id"></param>
-        /// <returns>returns a shape or null if unavailable</returns>
-        private Task<Schema> GetShapeForModule(string module, string id)
+        /// <returns>returns a schema or null if unavailable</returns>
+        private Task<Schema> GetSchemaForModule(string module)
         {
             try
             {
-                // base shape to be added to
-                var shape = new Schema
+                // base schema to be added to
+                var schema = new Schema
                 {
-                    Id = id,
+                    Id = module,
                     Name = module,
                     Description = "",
                     PublisherMetaJson = JsonConvert.SerializeObject(new PublisherMetaJson
@@ -378,7 +377,7 @@ namespace Plugin_Sage.Plugin
                 var keys = busObjectService.GetKeys();
                 var key = keys[0];
 
-                // assign all properties of record to shape
+                // assign all properties of record to schema
                 foreach (var col in record)
                 {
                     if (!string.IsNullOrEmpty(col.Key))
@@ -395,11 +394,11 @@ namespace Plugin_Sage.Plugin
                             IsNullable = col.Key != key
                         };
 
-                        shape.Properties.Add(property);
+                        schema.Properties.Add(property);
                     }
                 }
 
-                return Task.FromResult(shape);
+                return Task.FromResult(schema);
             }
             catch (Exception e)
             {

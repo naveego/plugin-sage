@@ -286,7 +286,7 @@ namespace Plugin_Sage.API
                 Logger.Error("Error checking date for record date check");
                 Logger.Error(_session.GetError());
                 Logger.Error(e.Message);
-                throw;
+                return false;
             }
         }
 
