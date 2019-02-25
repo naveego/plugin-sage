@@ -27,7 +27,7 @@ namespace Plugin_Sage.Plugin
         }
 
         /// <summary>
-        /// Establishes a connection with Zoho CRM. Creates an authenticated http client and tests it.
+        /// Establishes a connection with Sage and tests it.
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
@@ -116,7 +116,7 @@ namespace Plugin_Sage.Plugin
 
 
         /// <summary>
-        /// Discovers schemas located in the users Zoho CRM instance
+        /// Discovers schemas located in the users Sage instance
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
