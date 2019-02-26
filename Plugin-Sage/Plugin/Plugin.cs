@@ -114,7 +114,6 @@ namespace Plugin_Sage.Plugin
             await _tcs.Task;
         }
 
-
         /// <summary>
         /// Discovers schemas located in the users Sage instance
         /// </summary>
