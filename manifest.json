@@ -12,6 +12,7 @@
   "canProduceMultipleSchemas": true,
   "canAcceptQueryBasedSchemas": false,
   "canUseOAuth": false,
+  "canWrite": true,
   "configSchema": {
     "ui": {
       "ui:order": ["Username", "Password", "CompanyCode", "HomePath", "ModulesList"],
