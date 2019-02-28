@@ -245,6 +245,7 @@ namespace Plugin_Sage.Plugin
         /// <returns></returns>
         public override Task<PrepareWriteResponse> PrepareWrite(PrepareWriteRequest request, ServerCallContext context)
         {
+            Logger.Info("Preparing write...");
             _server.WriteConfigured = false;
 
             var writeSettings = new WriteSettings
@@ -256,6 +257,7 @@ namespace Plugin_Sage.Plugin
             _server.WriteSettings = writeSettings;
             _server.WriteConfigured = true;
 
+            Logger.Info("Write prepared.");
             return Task.FromResult(new PrepareWriteResponse());
         }
 
@@ -493,6 +495,11 @@ namespace Plugin_Sage.Plugin
                 // update record
                 var error = busObjectService.UpdateSingleRecord(record);
 
+                if (string.IsNullOrEmpty(error))
+                {
+                    Logger.Info("Modified 1 record.");
+                }
+                
                 return Task.FromResult(error);
             }
             catch (Exception e)
