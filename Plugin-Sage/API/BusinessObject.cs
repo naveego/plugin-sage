@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Newtonsoft.Json;
 using Plugin_Sage.Helper;
 using Plugin_Sage.Interfaces;
+using Pub;
 
 namespace Plugin_Sage.API
 {
@@ -129,7 +132,69 @@ namespace Plugin_Sage.API
                 throw;
             }
         }
-        
+
+        /// <summary>
+        /// Writes a record back to Sage
+        /// </summary>
+        /// <param name="record"></param>
+        /// <returns></returns>
+        public string UpdateSingleRecord(Record record)
+        {
+            Dictionary<string, dynamic> recordObject;
+            string[] keyColumnsObject = GetKeys();
+
+            // convert record json into object
+            try
+            {
+                recordObject = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(record.DataJson);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                throw;
+            }
+
+            // set key column value to enable editing of record
+            try
+            {
+                var key = keyColumnsObject[0];
+                var keyRecord = recordObject[key];
+                _busObject.InvokeMethod("nSetKeyValue", key, keyRecord.ToString());
+                _busObject.InvokeMethod("nSetKey");
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error updating single record");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+
+            // write out all other columns
+            try
+            {
+                // remove key column as it is already set
+                recordObject.Remove(keyColumnsObject[0]);
+
+                foreach (var col in recordObject)
+                {
+                    if (col.Value != null)
+                    {
+                        _busObject.InvokeMethod("nSetValue", col.Key, col.Value.ToString());
+                    }   
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error updating single record");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                return _session.GetError();
+            }
+
+            return "";
+        }
+
         /// <summary>
         /// Gets the keys for the current business object
         /// </summary>
@@ -153,6 +218,90 @@ namespace Plugin_Sage.API
         }
 
         /// <summary>
+        /// Checks if the source system has newer data than the requested write back
+        /// </summary>
+        /// <param name="record"></param>
+        /// <param name="schema"></param>
+        /// <returns></returns>
+        public bool IsSourceNewer(Record record, Schema schema)
+        {
+            Dictionary<string, dynamic> recordObject;
+            string[] columnsObject;
+            string[] keyColumnsObject = GetKeys();
+
+            // convert record json into object
+            try
+            {
+                recordObject = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(record.DataJson);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                throw;
+            }
+            
+            // get metadata
+            try
+            {
+                var metadata = GetMetadata();
+                columnsObject = metadata.columnsObject;
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error getting meta data for record date check");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+            
+            // set key column value 
+            try
+            {
+                var key = keyColumnsObject[0];
+                var keyRecord = recordObject[key];
+                _busObject.InvokeMethod("nSetKeyValue", key, keyRecord.ToString());
+                _busObject.InvokeMethod("nSetKey");
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error setting key for record date check");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                throw;
+            }
+
+            // move pointer to records
+            try
+            {
+                // get source record
+                _busObject.InvokeMethod("nFind");
+                var srcRecordObject = GetRecord(columnsObject);
+                
+                // get modified key from schema
+                var modifiedKey = schema.Properties.First(x => x.IsUpdateCounter);
+                
+                // if source is newer than request then exit
+                if (recordObject.ContainsKey(modifiedKey.Id) && srcRecordObject.ContainsKey(modifiedKey.Id))
+                {
+                    if (recordObject[modifiedKey.Id] != null && srcRecordObject[modifiedKey.Id] != null)
+                    {
+                        return DateTime.Parse((string) recordObject[modifiedKey.Id]) <=
+                               DateTime.Parse((string) srcRecordObject[modifiedKey.Id]);
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error checking date for record date check");
+                Logger.Error(_session.GetError());
+                Logger.Error(e.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets the table metadata that the business object is connected to
         /// </summary>
         /// <returns>the columns of the table and the number of records in the table</returns>
@@ -164,10 +313,10 @@ namespace Plugin_Sage.API
                 var dataSources = _busObject.InvokeMethod("sGetDataSources");
                 var dataSourcesObject = dataSources.ToString().Split(System.Convert.ToChar(352));
 
-                var columns = _busObject.InvokeMethod("sGetColumns",dataSourcesObject[0]);
+                var columns = _busObject.InvokeMethod("sGetColumns", dataSourcesObject[0]);
                 var columnsObject = columns.ToString().Split(System.Convert.ToChar(352));
 
-                var recordCount = _busObject.InvokeMethod("nGetRecordCount",dataSourcesObject[0]);
+                var recordCount = _busObject.InvokeMethod("nGetRecordCount", dataSourcesObject[0]);
 
                 return (columnsObject, recordCount);
             }

@@ -2,9 +2,10 @@
   "id": "plugin-sage",
   "displayName": "Sage Publisher",
   "description": "Publisher which pulls data from a Sage instance. Agent must be installed on the Sage instance server.",
+  "apiVersion": "2",
   "versionDescription": "Version 1",
-  "version": "1.1.0",
-  "iconfile": "icon.jpeg",
+  "version": "1.3.0",
+  "iconFile": "icon.jpeg",
   "executable": "Plugin-Sage",
   "kind": "publisher",
   "os": "$GOOS",
@@ -12,6 +13,7 @@
   "canProduceMultipleSchemas": true,
   "canAcceptQueryBasedSchemas": false,
   "canUseOAuth": false,
+  "canWrite": true,
   "configSchema": {
     "ui": {
       "ui:order": ["Username", "Password", "CompanyCode", "HomePath", "ModulesList"],
