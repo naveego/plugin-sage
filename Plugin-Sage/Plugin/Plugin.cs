@@ -286,6 +286,8 @@ namespace Plugin_Sage.Plugin
                     var record = requestStream.Current;
                     inCount++;
 
+                    Logger.Debug($"Got Record: {record.DataJson}");
+                    
                     // send record to source system
                     // timeout if it takes longer than the sla
                     var task = Task.Run(() => PutRecord(schema, record));

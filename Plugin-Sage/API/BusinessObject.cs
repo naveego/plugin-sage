@@ -178,7 +178,10 @@ namespace Plugin_Sage.API
 
                 foreach (var col in recordObject)
                 {
-                    _busObject.InvokeMethod("nSetValue", col.Key, col.Value.ToString());
+                    if (col.Value != null)
+                    {
+                        _busObject.InvokeMethod("nSetValue", col.Key, col.Value.ToString());
+                    }   
                 }
             }
             catch (Exception e)
@@ -278,8 +281,16 @@ namespace Plugin_Sage.API
                 var modifiedKey = schema.Properties.First(x => x.IsUpdateCounter);
                 
                 // if source is newer than request then exit
-                return DateTime.Parse((string) recordObject[modifiedKey.Id]) <=
-                       DateTime.Parse((string) srcRecordObject[modifiedKey.Id]);
+                if (recordObject.ContainsKey(modifiedKey.Id) && srcRecordObject.ContainsKey(modifiedKey.Id))
+                {
+                    if (recordObject[modifiedKey.Id] != null && srcRecordObject[modifiedKey.Id] != null)
+                    {
+                        return DateTime.Parse((string) recordObject[modifiedKey.Id]) <=
+                               DateTime.Parse((string) srcRecordObject[modifiedKey.Id]);
+                    }
+                }
+
+                return false;
             }
             catch (Exception e)
             {
