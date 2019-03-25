@@ -417,46 +417,47 @@ namespace Plugin_Sage.Plugin
         /// <returns></returns>
         private PropertyType GetPropertyType(dynamic value)
         {
-            try
-            {
-                // try datetime
-                if (DateTime.TryParse(value, out DateTime d))
-                {
-                    return PropertyType.Date;
-                }
-
-                // try int
-                if (Int32.TryParse(value, out int i))
-                {
-                    return PropertyType.Integer;
-                }
-
-                // try float
-                if (float.TryParse(value, out float f))
-                {
-                    return PropertyType.Float;
-                }
-
-                // try boolean
-                if (bool.TryParse(value, out bool b))
-                {
-                    return PropertyType.Bool;
-                }
-
-                // default return string
-                return PropertyType.String;
-            }
-            catch (Exception e)
-            {
-                // try object or array
-                if (value is IEnumerable)
-                {
-                    return PropertyType.Json;
-                }
-
-                Logger.Error(e.Message);
-                throw;
-            }
+            return PropertyType.String;
+//            try
+//            {
+//                // try datetime
+//                if (DateTime.TryParse(value, out DateTime d))
+//                {
+//                    return PropertyType.Date;
+//                }
+//
+//                // try int
+//                if (Int32.TryParse(value, out int i))
+//                {
+//                    return PropertyType.Integer;
+//                }
+//
+//                // try float
+//                if (float.TryParse(value, out float f))
+//                {
+//                    return PropertyType.Float;
+//                }
+//
+//                // try boolean
+//                if (bool.TryParse(value, out bool b))
+//                {
+//                    return PropertyType.Bool;
+//                }
+//
+//                // default return string
+//                return PropertyType.String;
+//            }
+//            catch (Exception e)
+//            {
+//                // try object or array
+//                if (value is IEnumerable)
+//                {
+//                    return PropertyType.Json;
+//                }
+//
+//                Logger.Error(e.Message);
+//                throw;
+//            }
         }
 
         /// <summary>
