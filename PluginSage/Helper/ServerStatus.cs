@@ -1,4 +1,4 @@
-namespace Plugin_Sage.Helper
+namespace PluginSage.Helper
 {
     public class ServerStatus
     {
