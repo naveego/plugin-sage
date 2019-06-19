@@ -6,11 +6,11 @@ using Grpc.Core;
 using Moq;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
-using PluginSage.Publisher;
+using Pub;
 using Xunit;
-using Record = PluginSage.Publisher.Record;
+using Record = Pub.Record;
 
-namespace Plugin_Sage_Test.Plugin
+namespace PluginSageTest.Plugin
 {
     public class PluginTest
     {
