@@ -1,6 +1,4 @@
-using Plugin_Sage.Plugin;
-
-namespace Plugin_Sage.Interfaces
+namespace PluginSage.Interfaces
 {
     public interface ISessionService
     {

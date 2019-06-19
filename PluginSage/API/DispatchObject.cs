@@ -1,8 +1,8 @@
 using System;
 using System.Reflection;
-using Plugin_Sage.Interfaces;
+using PluginSage.Interfaces;
 
-namespace Plugin_Sage.API
+namespace PluginSage.API
 {
     public class DispatchObject : IDispatchObject
     {

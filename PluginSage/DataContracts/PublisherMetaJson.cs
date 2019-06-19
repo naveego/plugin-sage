@@ -1,4 +1,4 @@
-namespace Plugin_Sage.DataContracts
+namespace PluginSage.DataContracts
 {
     public class PublisherMetaJson
     {

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Moq;
-using Plugin_Sage.Helper;
-using Plugin_Sage.Interfaces;
-using Pub;
+using PluginSage.Helper;
+using PluginSage.Interfaces;
+using PluginSage.Publisher;
 using Xunit;
-using Record = Pub.Record;
+using Record = PluginSage.Publisher.Record;
 
 namespace Plugin_Sage_Test.Plugin
 {
@@ -122,7 +122,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -160,7 +160,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -189,7 +189,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -226,7 +226,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -267,7 +267,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -313,7 +313,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -360,7 +360,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -400,7 +400,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();
@@ -463,7 +463,7 @@ namespace Plugin_Sage_Test.Plugin
             // setup
             Server server = new Server
             {
-                Services = {Publisher.BindService(new Plugin_Sage.Plugin.Plugin(GetMockSessionFactory()))},
+                Services = {Publisher.BindService(new PluginSage.Plugin.Plugin(GetMockSessionFactory()))},
                 Ports = {new ServerPort("localhost", 0, ServerCredentials.Insecure)}
             };
             server.Start();

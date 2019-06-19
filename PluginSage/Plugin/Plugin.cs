@@ -5,13 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Newtonsoft.Json;
-using Plugin_Sage.API;
-using Plugin_Sage.DataContracts;
-using Plugin_Sage.Helper;
-using Plugin_Sage.Interfaces;
+using PluginSage.API;
+using PluginSage.DataContracts;
+using PluginSage.Helper;
+using PluginSage.Interfaces;
 using Pub;
 
-namespace Plugin_Sage.Plugin
+namespace PluginSage.Plugin
 {
     public class Plugin : Publisher.PublisherBase
     {

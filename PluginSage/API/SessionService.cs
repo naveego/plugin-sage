@@ -1,9 +1,8 @@
 using System;
-using Plugin_Sage.Helper;
-using Plugin_Sage.Interfaces;
-using Plugin_Sage.Plugin;
+using PluginSage.Helper;
+using PluginSage.Interfaces;
 
-namespace Plugin_Sage.API
+namespace PluginSage.API
 {
     public class SessionService : ISessionService
     {

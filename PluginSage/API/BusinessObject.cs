@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Plugin_Sage.Helper;
-using Plugin_Sage.Interfaces;
+using PluginSage.Helper;
+using PluginSage.Interfaces;
 using Pub;
 
-namespace Plugin_Sage.API
+namespace PluginSage.API
 {
     public class BusinessObject : IBusinessObject
     {

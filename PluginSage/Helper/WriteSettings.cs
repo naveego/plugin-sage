@@ -1,6 +1,6 @@
 using Pub;
 
-namespace Plugin_Sage.Helper
+namespace PluginSage.Helper
 {
     public class WriteSettings
     {

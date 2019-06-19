@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Pub;
 
-namespace Plugin_Sage.Interfaces
+namespace PluginSage.Interfaces
 {
     public interface IBusinessObject
     {

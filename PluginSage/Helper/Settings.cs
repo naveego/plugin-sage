@@ -1,6 +1,6 @@
 using System;
 
-namespace Plugin_Sage.Helper
+namespace PluginSage.Helper
 {
     public class Settings
     {

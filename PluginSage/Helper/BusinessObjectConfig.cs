@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace Plugin_Sage.Helper
+namespace PluginSage.Helper
 {
     public class BusinessObjectConfig
     {

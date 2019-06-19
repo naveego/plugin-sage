@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netcoreapp2.2</TargetFramework>
-        <RootNamespace>Plugin_Sage_Test</RootNamespace>
+        <RootNamespace>PluginSageTest</RootNamespace>
 
         <IsPackable>false</IsPackable>
     </PropertyGroup>
@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Plugin-Sage\Plugin-Sage.csproj" />
+      <ProjectReference Include="..\PluginSage\PluginSage.csproj" />
     </ItemGroup>
 
 </Project>

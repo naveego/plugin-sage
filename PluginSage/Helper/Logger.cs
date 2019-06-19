@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace Plugin_Sage.Helper
+namespace PluginSage.Helper
 {
     public static class Logger
     {

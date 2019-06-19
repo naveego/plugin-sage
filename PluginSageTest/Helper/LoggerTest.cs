@@ -1,5 +1,5 @@
 using System.IO;
-using Plugin_Sage.Helper;
+using PluginSage.Helper;
 using Xunit;
 
 namespace Plugin_Sage_Test.Helper

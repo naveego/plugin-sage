@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Plugin_Sage.Interfaces
+namespace PluginSage.Interfaces
 {
     public interface IDispatchObject : IDisposable
     {

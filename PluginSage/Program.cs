@@ -2,9 +2,9 @@
 using System.Linq;
 using Grpc.Core;
 using Pub;
-using Plugin_Sage.Helper;
+using PluginSage.Helper;
 
-namespace Plugin_Sage
+namespace PluginSage
 {
     ///<summary>
     /// Summary description for Class1.

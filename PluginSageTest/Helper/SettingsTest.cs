@@ -1,6 +1,6 @@
 using System;
+using PluginSage.Helper;
 using Xunit;
-using Plugin_Sage.Helper;
 
 namespace Plugin_Sage_Test.Helper
 {

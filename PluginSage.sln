@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin-Sage", "Plugin-Sage\Plugin-Sage.csproj", "{46F9F35F-5F66-4EFC-AE1A-68A07EF32AC6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginSage", "PluginSage\PluginSage.csproj", "{46F9F35F-5F66-4EFC-AE1A-68A07EF32AC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin-Sage-Test", "Plugin-Sage-Test\Plugin-Sage-Test.csproj", "{2C8CD0A5-FB67-4D45-9B12-BD96A2F0C9F9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginSageTest", "PluginSageTest\PluginSageTest.csproj", "{2C8CD0A5-FB67-4D45-9B12-BD96A2F0C9F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
