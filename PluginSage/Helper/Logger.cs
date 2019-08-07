@@ -14,11 +14,11 @@ namespace PluginSage.Helper
             Error,
             Off
         }
-
+        
         private static string _path = @"plugin-sage-log.txt";
         private static LogLevel _level = LogLevel.Info;
         private static ReaderWriterLockSlim _readWriteLock = new ReaderWriterLockSlim();
-
+        
         /// <summary>
         /// Writes a log message with time stamp to a file
         /// </summary>
@@ -42,7 +42,7 @@ namespace PluginSage.Helper
                 _readWriteLock.ExitWriteLock();
             }
         }
-
+        
         /// <summary>
         /// Deletes log file if it is older than 7 days
         /// </summary>
@@ -67,10 +67,10 @@ namespace PluginSage.Helper
             {
                 return;
             }
-
+            
             Log(message);
         }
-
+        
         /// <summary>
         /// Logging method for Debug messages
         /// </summary>
@@ -81,10 +81,9 @@ namespace PluginSage.Helper
             {
                 return;
             }
-
+            
             Log(message);
         }
-
         /// <summary>
         /// Logging method for Info messages
         /// </summary>
@@ -95,10 +94,10 @@ namespace PluginSage.Helper
             {
                 return;
             }
-
+            
             Log(message);
         }
-
+        
         /// <summary>
         /// Logging method for Error messages
         /// </summary>
@@ -109,6 +108,7 @@ namespace PluginSage.Helper
             {
                 return;
             }
+            
             Log(message);
         }
 

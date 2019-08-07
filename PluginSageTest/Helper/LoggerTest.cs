@@ -2,7 +2,7 @@ using System.IO;
 using PluginSage.Helper;
 using Xunit;
 
-namespace Plugin_Sage_Test.Helper
+namespace PluginSageTest.Helper
 {
     public class LoggerTest
     {
