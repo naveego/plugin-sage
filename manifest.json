@@ -1,10 +1,10 @@
 {
   "id": "plugin-sage",
   "displayName": "Sage Publisher",
-  "description": "Publisher which pulls data from a Sage instance. Agent and included driver must be installed on the Sage instance server.",
+  "description": "Publisher which pulls data from a Sage instance. Agent must be installed on the Sage instance server.",
   "apiVersion": "2",
-  "versionDescription": "Version 3",
-  "version": "3.0.0",
+  "versionDescription": "Version 4",
+  "version": "4.0.0",
   "iconFile": "icon.jpeg",
   "executable": "PluginSage",
   "kind": "publisher",
@@ -16,7 +16,13 @@
   "canWrite": true,
   "configSchema": {
     "ui": {
-      "ui:order": ["Username", "Password", "CompanyCode", "HomePath", "ModulesList"],
+      "ui:order": [
+        "Username",
+        "Password",
+        "CompanyCode",
+        "HomePath",
+        "ModulesList"
+      ],
       "Password": {
         "ui:widget": "password"
       },
@@ -47,8 +53,8 @@
         },
         "HomePath": {
           "type": "string",
-          "title": "Sage 100 MAS90 Path",
-          "description": "Local path to the MAS100 directory (ex. C:\\Sage\\Sage 100 Advanced\\MAS90)"
+          "title": "Sage 100 Home Path",
+          "description": "Local path to the MAS90/HOME directory (ex. C:\\Sage\\Sage 100 Advanced\\MAS90\\Home)"
         },
         "ModulesList": {
           "type": "array",

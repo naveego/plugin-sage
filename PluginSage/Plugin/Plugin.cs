@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Odbc;
+using System.Collections;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Newtonsoft.Json;
@@ -16,19 +15,19 @@ namespace PluginSage.Plugin
 {
     public class Plugin : Publisher.PublisherBase
     {
-        private readonly Func<Settings, IConnectionFactoryService> _connFactory;
+        private readonly Func<Settings, ISessionService> _sessionFactory;
         private readonly ServerStatus _server;
         private TaskCompletionSource<bool> _tcs;
-        private IConnectionFactoryService _connService;
+        private ISessionService _sessionService;
 
-        public Plugin(Func<Settings, IConnectionFactoryService> connFactory = null)
+        public Plugin(Func<Settings, ISessionService> sessionFactory = null)
         {
-            _connFactory = connFactory ?? (s => new ConnectionFactoryService(s));
+            _sessionFactory = sessionFactory ?? (s => new SessionService(s));
             _server = new ServerStatus();
         }
 
         /// <summary>
-        /// Establishes a connection with an odbc data source
+        /// Establishes a connection with Sage and tests it.
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
@@ -59,13 +58,10 @@ namespace PluginSage.Plugin
                 });
             }
 
-            // attempt to connect to data source
+            // attempt to create new session service object
             try
             {
-                _connService = _connFactory(_server.Settings);
-                var connection = _connService.MakeConnectionObject();
-                connection.Open();
-                connection.Close();
+                _sessionService = _sessionFactory(settings);
                 _server.Connected = true;
             }
             catch (Exception e)
@@ -80,7 +76,7 @@ namespace PluginSage.Plugin
                 });
             }
 
-            Logger.Info("Connected.");
+            Logger.Info("Connected to Sage");
 
             return Task.FromResult(new ConnectResponse
             {
@@ -118,9 +114,8 @@ namespace PluginSage.Plugin
             await _tcs.Task;
         }
 
-
         /// <summary>
-        /// Discovers schemas based on a query
+        /// Discovers schemas located in the users Sage instance
         /// </summary>
         /// <param name="request"></param>
         /// <param name="context"></param>
@@ -138,12 +133,12 @@ namespace PluginSage.Plugin
                 try
                 {
                     var refreshSchemas = request.ToRefresh;
-            
+
                     Logger.Info($"Refresh schemas attempted: {refreshSchemas.Count}");
-            
+
                     var tasks = refreshSchemas.Select((s) =>
                         {
-                            var metaJsonObject = JsonConvert.DeserializeObject<SchemaMetaJson>(s.PublisherMetaJson);
+                            var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(s.PublisherMetaJson);
                             return GetSchemaForModule(metaJsonObject.Module);
                         })
                         .ToArray();
@@ -205,231 +200,40 @@ namespace PluginSage.Plugin
             try
             {
                 var recordsCount = 0;
-                var metaJsonObject = JsonConvert.DeserializeObject<SchemaMetaJson>(schema.PublisherMetaJson);
-                
-                // create table helper object
-                var tableHelper = _connService.MakeTableHelper(metaJsonObject.Module);
+                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
 
-                // create new db connection and command
-                var connection = _connService.MakeConnectionObject();       
-                var command = _connService.MakeCommandObject(tableHelper.GetSelectQuery(), connection);
-                
-                // open the connection
-                connection.Open();
-                
-                // get a reader object for the query
-                var reader = command.ExecuteReader();
+                // get business object service for given module
+                var busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
 
-                if (reader.HasRows)
+                // get a single record
+                var records = busObjectService.GetAllRecords();
+
+                foreach (var record in records)
                 {
-                    while (reader.Read() && _server.Connected)
+                    var recordOutput = new Record
                     {
-                        // build record map
-                        var recordMap = new Dictionary<string, object>();
+                        Action = Record.Types.Action.Upsert,
+                        DataJson = JsonConvert.SerializeObject(record)
+                    };
 
-                        foreach (var property in schema.Properties)
-                        {
-                            try
-                            {
-                                switch (property.Type)
-                                {
-                                    case PropertyType.String:
-                                        recordMap[property.Id] = reader[property.Id].ToString();
-                                        break;
-                                    default:
-                                        recordMap[property.Id] = reader[property.Id];
-                                        break;
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Logger.Error($"No column with property Id: {property.Id}");
-                                Logger.Error(e.Message);
-                                recordMap[property.Id] = "";
-                            }
-                        }
-                    
-                        // create record
-                        var record = new Record
-                        {
-                            Action = Record.Types.Action.Upsert,
-                            DataJson = JsonConvert.SerializeObject(recordMap)
-                        };
-                    
-                        // stop publishing if the limit flag is enabled and the limit has been reached or the server is disconnected
-                        if ((limitFlag && recordsCount == limit) || !_server.Connected)
-                        {
-                            break;
-                        }
 
-                        // publish record
-                        await responseStream.WriteAsync(record);
-                        recordsCount++;
+                    // stop publishing if the limit flag is enabled and the limit has been reached or the server is disconnected
+                    if ((limitFlag && recordsCount == limit) || !_server.Connected)
+                    {
+                        break;
                     }
+
+                    // publish record
+                    await responseStream.WriteAsync(recordOutput);
+                    recordsCount++;
                 }
-                
-                // close reader and connection
-                reader.Close();
-                connection.Close();
-                
+
                 Logger.Info($"Published {recordsCount} records");
             }
             catch (Exception e)
             {
                 Logger.Error(e.Message);
                 throw;
-            }
-        }
-        
-        /// <summary>
-        /// Creates a form and handles form updates for write backs
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public override Task<ConfigureWriteResponse> ConfigureWrite(ConfigureWriteRequest request, ServerCallContext context)
-        {
-            Logger.Info("Configuring write...");
-            
-            var schemaJsonObj = new Dictionary<string, object>
-            {
-                {"type", "object"},
-                {"properties", new Dictionary<string, object>
-                {
-                    {"Query", new Dictionary<string, string>
-                    {
-                        {"type", "string"},
-                        {"title", "Query"},
-                        {"description", "Query to execute for write back with parameter place holders"},
-                    }},
-                    {"Parameters", new Dictionary<string, object>
-                    {
-                        {"type", "array"},
-                        {"title", "Parameters"},
-                        {"description", "Parameters to replace the place holders in the query"},
-                        {"items", new Dictionary<string, object>
-                        {
-                            {"type", "object"},
-                            {"properties", new Dictionary<string, object>
-                            {
-                                {"ParamName", new Dictionary<string, object>
-                                {
-                                    {"type", "string"},
-                                    {"title", "Name"}
-                                }},
-                                {"ParamType", new Dictionary<string, object>
-                                {
-                                    {"type", "string"},
-                                    {"title", "Type"},
-                                    {"enum", new []
-                                    {
-                                        "string", "decimal", "datetime"
-                                    }},
-                                    {"enumNames", new []
-                                    {
-                                        "String", "Decimal", "Datetime"
-                                    }},
-                                }},
-                            }},
-                            {"required", new []
-                            {
-                                "ParamName", "ParamType"
-                            }}
-                        }}
-                    }},
-                }},
-                {"required", new []
-                {
-                    "Query"
-                }}
-            };
-            
-            var uiJsonObj = new Dictionary<string, object>
-            {
-                {"ui:order", new []
-                {
-                    "Query", "Parameters"
-                }},
-                {"Query", new Dictionary<string, object>
-                {
-                    {"ui:widget", "textarea"}
-                }}
-            };
-
-            var schemaJson = JsonConvert.SerializeObject(schemaJsonObj);
-            var uiJson = JsonConvert.SerializeObject(uiJsonObj);
-            
-            // if first call 
-            if (request.Form == null || request.Form.DataJson == "")
-            {
-                return Task.FromResult(new ConfigureWriteResponse
-                {
-                    Form = new ConfigurationFormResponse
-                    {
-                        DataJson = "",
-                        DataErrorsJson = "",
-                        Errors = { },
-                        SchemaJson = schemaJson,
-                        UiJson = uiJson,
-                        StateJson = ""
-                    },
-                    Schema = null
-                });
-            }
-
-            try
-            {
-                // get form data
-                var formData = JsonConvert.DeserializeObject<ConfigureWriteFormData>(request.Form.DataJson);
-            
-                // base schema to return
-                var schema = new Schema
-                {
-                    Id = "",
-                    Name = "",
-                    Query = formData.Query,
-                    DataFlowDirection = Schema.Types.DataFlowDirection.Write
-                };
-            
-                // add parameters to properties
-                foreach (var param in formData.Parameters)
-                {
-                    schema.Properties.Add(new Property
-                    {
-                        Id = param.ParamName,
-                        Name = param.ParamName,
-                        Type = GetWriteBackType(param.ParamType)
-                    });
-                }
-            
-                return Task.FromResult(new ConfigureWriteResponse
-                {
-                    Form = new ConfigurationFormResponse
-                    {
-                        DataJson = request.Form.DataJson,
-                        Errors = { },
-                        SchemaJson = schemaJson,
-                        UiJson = uiJson,
-                        StateJson = request.Form.StateJson
-                    },
-                    Schema = schema
-                });
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e.Message);
-                return Task.FromResult(new ConfigureWriteResponse
-                {
-                    Form = new ConfigurationFormResponse
-                    {
-                        DataJson = request.Form.DataJson,
-                        Errors = { e.Message },
-                        SchemaJson = schemaJson,
-                        UiJson = uiJson,
-                        StateJson = request.Form.StateJson
-                    },
-                    Schema = null
-                });
             }
         }
 
@@ -458,7 +262,7 @@ namespace PluginSage.Plugin
         }
 
         /// <summary>
-        /// Takes in records and writes them out then sends acks back to the client
+        /// Takes in records and writes them out to the Sage instance then sends acks back to the client
         /// </summary>
         /// <param name="requestStream"></param>
         /// <param name="responseStream"></param>
@@ -469,7 +273,7 @@ namespace PluginSage.Plugin
         {
             try
             {
-                Logger.Info("Writing records...");
+                Logger.Info("Writing records to Sage...");
                 var schema = _server.WriteSettings.Schema;
                 var sla = _server.WriteSettings.CommitSLA;
                 var inCount = 0;
@@ -481,9 +285,9 @@ namespace PluginSage.Plugin
                 {
                     var record = requestStream.Current;
                     inCount++;
-                    
-                    Logger.Debug($"Got Record {record.DataJson}");
 
+                    Logger.Debug($"Got Record: {record.DataJson}");
+                    
                     // send record to source system
                     // timeout if it takes longer than the sla
                     var task = Task.Run(() => PutRecord(schema, record));
@@ -514,7 +318,7 @@ namespace PluginSage.Plugin
                     }
                 }
 
-                Logger.Info($"Wrote {outCount} of {inCount} records.");
+                Logger.Info($"Wrote {outCount} of {inCount} records to Sage.");
             }
             catch (Exception e)
             {
@@ -534,7 +338,6 @@ namespace PluginSage.Plugin
             // clear connection
             _server.Connected = false;
             _server.Settings = null;
-            _server.WriteSettings = null;
 
             // alert connection session to close
             if (_tcs != null)
@@ -546,7 +349,7 @@ namespace PluginSage.Plugin
             Logger.Info("Disconnected");
             return Task.FromResult(new DisconnectResponse());
         }
-        
+
         /// <summary>
         /// Gets a schema for a given module
         /// </summary>
@@ -556,80 +359,49 @@ namespace PluginSage.Plugin
         {
             try
             {
-                // create table helper object
-                var tableHelper = _connService.MakeTableHelper(module);
-                
                 // base schema to be added to
                 var schema = new Schema
                 {
                     Id = module,
                     Name = module,
-                    Description = tableHelper.TableName,
-                    PublisherMetaJson = JsonConvert.SerializeObject(new SchemaMetaJson
+                    Description = "",
+                    PublisherMetaJson = JsonConvert.SerializeObject(new PublisherMetaJson
                     {
                         Module = module
                     }),
                     DataFlowDirection = Schema.Types.DataFlowDirection.ReadWrite
                 };
-                
-                // create new db connection and command
-                var connection = _connService.MakeConnectionObject();       
-                var command = _connService.MakeCommandObject(tableHelper.GetSelectQuery(), connection);
-                
-                // open the connection
-                connection.Open();
-                
-                // get a reader object for the query
-                var reader = command.ExecuteReader();
 
-                // get metadata table object for reader
-                var schemaTable = reader.GetSchemaTable();
-                
-                if (schemaTable != null)
+                // get business object service for given module
+                var busObjectService = _sessionService.MakeBusinessObject(module);
+
+                // get a single record
+                var record = busObjectService.GetSingleRecord();
+                var keys = busObjectService.GetKeys();
+                var key = keys[0];
+
+                // assign all properties of record to schema
+                foreach (var col in record)
                 {
-                    // counter for unknown columns with no name
-                    var unnamedColIndex = 0;
-                    
-                    // get each column and create a property for the column
-                    foreach (DataRow row in schemaTable.Rows)
+                    if (!string.IsNullOrEmpty(col.Key))
                     {
-                        // get the column name
-                        var colName = row["ColumnName"].ToString();
-                        if (string.IsNullOrWhiteSpace(colName))
-                        {
-                            colName = $"UNKNOWN_{unnamedColIndex}";
-                            unnamedColIndex++;
-                        }
-
-                        // create property
                         var property = new Property
                         {
-                            Id = colName,
-                            Name = colName,
-                            Description = "",
-                            Type = GetPropertyType(row),
-                            TypeAtSource = row["DataType"].ToString(),
-                            IsKey = Boolean.Parse(row["IsKey"].ToString()) || tableHelper.Keys.Contains(colName),
-                            IsNullable = Boolean.Parse(row["AllowDBNull"].ToString()),
-                            IsCreateCounter = colName == "DateCreated",
-                            IsUpdateCounter = colName == "DateUpdated",
-                            PublisherMetaJson = ""
+                            Id = col.Key,
+                            Name = col.Key,
+                            Type = GetPropertyType(col.Value),
+                            IsKey = col.Key == key,
+                            IsCreateCounter = col.Key == "DATECREATED$",
+                            IsUpdateCounter = col.Key == "DATEUPDATED$",
+                            TypeAtSource = "",
+                            IsNullable = col.Key != key
                         };
-                    
-                        // add property to schema
+
                         schema.Properties.Add(property);
                     }
                 }
-                else
-                {
-                    schema = null;
-                }
-                
-                // close reader and connection
-                reader.Close();
-                connection.Close();
 
-                return Task.FromResult(schema);   
+                return Task.FromResult(schema);
             }
             catch (Exception e)
             {
@@ -637,137 +409,101 @@ namespace PluginSage.Plugin
                 return null;
             }
         }
-        
+
         /// <summary>
-        /// Gets the property type of a column
+        /// Gets the property type of a value
         /// </summary>
-        /// <param name="col"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
-        private PropertyType GetPropertyType(DataRow col)
+        private PropertyType GetPropertyType(dynamic value)
         {
-            var type = Type.GetType(col["DataType"].ToString());
-            
-            switch (true)
-            {
-                case bool _ when type == typeof(Decimal):
-                    return PropertyType.Float;
-                case bool _ when type == typeof(DateTime):
-                    return PropertyType.Datetime;
-                default:
-                    return PropertyType.String;
-            }
+            return PropertyType.String;
+//            try
+//            {
+//                // try datetime
+//                if (DateTime.TryParse(value, out DateTime d))
+//                {
+//                    return PropertyType.Date;
+//                }
+//
+//                // try int
+//                if (Int32.TryParse(value, out int i))
+//                {
+//                    return PropertyType.Integer;
+//                }
+//
+//                // try float
+//                if (float.TryParse(value, out float f))
+//                {
+//                    return PropertyType.Float;
+//                }
+//
+//                // try boolean
+//                if (bool.TryParse(value, out bool b))
+//                {
+//                    return PropertyType.Bool;
+//                }
+//
+//                // default return string
+//                return PropertyType.String;
+//            }
+//            catch (Exception e)
+//            {
+//                // try object or array
+//                if (value is IEnumerable)
+//                {
+//                    return PropertyType.Json;
+//                }
+//
+//                Logger.Error(e.Message);
+//                throw;
+//            }
         }
 
         /// <summary>
-        /// Gets the property type for the provided write back type from form
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        private PropertyType GetWriteBackType(string type)
-        {
-            switch (type)
-            {
-                case "string":
-                    return PropertyType.String;
-                case "decimal":
-                    return PropertyType.Float;
-                case "datetime":
-                    return PropertyType.Datetime;
-                default:
-                    return PropertyType.String;
-            }
-        }
-
-        /// <summary>
-        /// Writes a record out to source system
-        /// Attempts to insert first and update if insert fails
+        /// Writes a record out to Sage
         /// </summary>
         /// <param name="schema"></param>
         /// <param name="record"></param>
         /// <returns></returns>
         private Task<string> PutRecord(Schema schema, Record record)
         {
-            // insert
+            IBusinessObject busObjectService;
             try
             {
-                // create table helper object
-                var metaJsonObject = JsonConvert.DeserializeObject<SchemaMetaJson>(schema.PublisherMetaJson);
-                var tableHelper = _connService.MakeTableHelper(metaJsonObject.Module);
-
-                var recObj = JsonConvert.DeserializeObject<Dictionary<string, string>>(record.DataJson);
-                
-                // get insert query
-                var insertQuery = tableHelper.GetInsertQuery(schema.Properties.ToList(), recObj);
-                
-                // debug logging
-                Logger.Debug("Insert");
-                Logger.Debug(insertQuery);
-                Logger.Debug(JsonConvert.SerializeObject(recObj, Formatting.Indented));
-
-                // create new db connection and command
-                var connection = _connService.MakeConnectionObject();       
-                var command = _connService.MakeCommandObject(insertQuery, connection);
-
-                // open the connection
-                connection.Open();
-                
-                // get a reader object for the query
-                command.Prepare();
-                var reader = command.ExecuteReader();
-                
-                Logger.Info($"Created {reader.RecordsAffected} record(s).");
-                
-                // close reader and connection
-                reader.Close();
-                connection.Close();
-                
-                return Task.FromResult("");
+                // get business object service for given module
+                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
+                busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
             }
             catch (Exception e)
             {
-                if (!e.Message.Contains("Duplicate key not allowed"))
-                {
-                    // not a duplicate key error and needs to error out
-                    Logger.Error(e.Message);
-                    return Task.FromResult(e.Message);
-                }
+                Logger.Error(e.Message);
+                return Task.FromResult(e.Message);
             }
-            
-            // update 
             try
             {
-                // create table helper object
-                var metaJsonObject = JsonConvert.DeserializeObject<SchemaMetaJson>(schema.PublisherMetaJson);
-                var tableHelper = _connService.MakeTableHelper(metaJsonObject.Module);
+                // check if source is newer than requested write back
+                if (busObjectService.IsSourceNewer(record, schema))
+                {
+                    return Task.FromResult("source system is newer than requested write back");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+                return Task.FromResult(e.Message);
+            }
+            try
+            {
+                // update record
+                var error = busObjectService.UpdateSingleRecord(record);
 
-                var recObj = JsonConvert.DeserializeObject<Dictionary<string, string>>(record.DataJson);
+                if (string.IsNullOrEmpty(error))
+                {
+                    Logger.Info("Modified 1 record.");
+                }
                 
-                // get insert query
-                var updateQuery = tableHelper.GetUpdateQuery(schema.Properties.ToList(), recObj);
-                
-                // debug logging
-                Logger.Debug("Update");
-                Logger.Debug(updateQuery);
-                Logger.Debug(JsonConvert.SerializeObject(recObj, Formatting.Indented));
-
-                // create new db connection and command
-                var connection = _connService.MakeConnectionObject();       
-                var command = _connService.MakeCommandObject(updateQuery, connection);
-
-                // open the connection
-                connection.Open();
-                
-                // get a reader object for the query
-                command.Prepare();
-                var reader = command.ExecuteReader();
-                
-                Logger.Info($"Modified {reader.RecordsAffected} record(s).");
-                
-                // close reader and connection
-                reader.Close();
-                connection.Close();
-                
-                return Task.FromResult("");
+                return Task.FromResult(error);
             }
             catch (Exception e)
             {
