@@ -16,7 +16,13 @@
   "canWrite": true,
   "configSchema": {
     "ui": {
-      "ui:order": ["Username", "Password", "CompanyCode", "HomePath", "ModulesList"],
+      "ui:order": [
+        "Username",
+        "Password",
+        "CompanyCode",
+        "HomePath",
+        "ModulesList"
+      ],
       "Password": {
         "ui:widget": "password"
       },
@@ -48,7 +54,7 @@
         "HomePath": {
           "type": "string",
           "title": "Sage 100 Home Path",
-          "description": "Local path to the MAS100/HOME directory (ex. C:\\Sage\\Sage 100 Advanced\\MAS90\\Home)"
+          "description": "Local path to the MAS90/HOME directory (ex. C:\\Sage\\Sage 100 Advanced\\MAS90\\Home)"
         },
         "ModulesList": {
           "type": "array",
