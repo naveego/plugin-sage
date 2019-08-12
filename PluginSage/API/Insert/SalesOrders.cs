@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using PluginSage.DataContracts;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
 using Pub;
@@ -32,13 +33,13 @@ namespace PluginSage.API.Insert
                     $"Error: {sessionError}, Method: {_method}, Command: {_command}, Variable: {_variable}, Value: {_value}";
             }
             
-            Dictionary<string, dynamic> recordObject;
+            Dictionary<string, object> recordObject;
             string[] keyColumnsObject = Metadata.Metadata.GetKeys(busObject, session);
 
             // convert record json into object
             try
             {
-                recordObject = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(record.DataJson);
+                recordObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(record.DataJson);
             }
             catch (Exception e)
             {
@@ -70,6 +71,110 @@ namespace PluginSage.API.Insert
                 return error;
             }
 
+            // set and validate all required properties
+            var recordKey = "ARDivisionNo$";
+            if (recordObject.ContainsKey(recordKey))
+            {
+                var recordValue = recordObject[recordKey];
+                if (recordValue != null)
+                {
+                    try
+                    {
+                        SetLogParams("InsertSingleRecord", "nSetValue", recordKey, recordValue.ToString());
+                        busObject.InvokeMethod("nSetValue", recordKey, recordValue.ToString());
+                        recordObject.Remove(recordKey);
+                    }
+                    catch (Exception e)
+                    {
+                        var error = GetErrorMessage();
+                        Logger.Error("Error inserting single record");
+                        Logger.Error(error);
+                        Logger.Error(e.Message);
+                        return error;
+                    }
+                }
+                else
+                {
+                    return $"{recordKey} was null";
+                }
+            }
+            else
+            {
+                return $"{recordKey} must be set";
+            }
+
+            recordKey = "CustomerNo$";
+            if (recordObject.ContainsKey(recordKey))
+            {
+                var recordValue = recordObject[recordKey];
+                if (recordValue != null)
+                {
+                    try
+                    {
+                        SetLogParams("InsertSingleRecord", "nSetValue", recordKey, recordValue.ToString());
+                        busObject.InvokeMethod("nSetValue", recordKey, recordValue.ToString());
+                        recordObject.Remove(recordKey);
+                    }
+                    catch (Exception e)
+                    {
+                        var error = GetErrorMessage();
+                        Logger.Error("Error inserting single record");
+                        Logger.Error(error);
+                        Logger.Error(e.Message);
+                        return error;
+                    }
+                }
+                else
+                {
+                    return $"{recordKey} was null";
+                }
+            }
+            else
+            {
+                return $"{recordKey} must be set";
+            }
+
+            recordKey = "LineItems";
+            if (recordObject.ContainsKey(recordKey))
+            {
+                var recordValue = recordObject[recordKey];
+                if (recordValue != null)
+                {
+                    
+                    try
+                    {
+                        var linesBusObject = new DispatchObject(busObject.GetProperty("oLines"));
+                        var lineItems = JsonConvert.DeserializeObject<List<LineItem>>(JsonConvert.SerializeObject(recordValue));
+
+                        foreach (var lineItem in lineItems)
+                        {
+                            SetLogParams("InsertSingleRecord", "nSetValue", recordKey, lineItem.ItemCode);
+                            linesBusObject.InvokeMethod("nAddLine");
+                            linesBusObject.InvokeMethod("nSetValue", "ItemCode$", lineItem.ItemCode);
+                            linesBusObject.InvokeMethod("nSetValue", "QuantityOrdered", lineItem.QuantityOrdered.ToString());
+                        }
+                        
+                        recordObject.Remove(recordKey);
+                    }
+                    catch (Exception e)
+                    {
+                        var error = GetErrorMessage();
+                        Logger.Error("Error inserting single record");
+                        Logger.Error(error);
+                        Logger.Error(e.Message);
+                        return error;
+                    }
+                }
+                else
+                {
+                    return $"{recordKey} was null";
+                }
+            }
+            else
+            {
+                return $"{recordKey} must be set";
+            }
+
             // write out all other columns
             try
             {
@@ -77,7 +182,7 @@ namespace PluginSage.API.Insert
                 {
                     if (col.Value != null)
                     {
-                        SetLogParams("InsertSingleRecord", "nSetValue", col.Key, col.Value);
+                        SetLogParams("InsertSingleRecord", "nSetValue", col.Key, col.Value.ToString());
                         busObject.InvokeMethod("nSetValue", col.Key, col.Value.ToString());
                     }
                 }

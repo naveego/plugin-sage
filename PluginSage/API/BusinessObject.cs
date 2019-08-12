@@ -69,7 +69,7 @@ namespace PluginSage.API
         {
             switch (module)
             {
-                case "Sales Orders":
+                case "Sales Orders Insert":
                     return Insert.Insert.SalesOrders(_busObject, _session, record);
                 default:
                     return $"Requested module: {module} does not support insert writebacks";

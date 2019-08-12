@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Grpc.Core;
 using Newtonsoft.Json;
 using PluginSage.API;
+using PluginSage.API.Discover;
 using PluginSage.DataContracts;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
@@ -140,6 +141,13 @@ namespace PluginSage.Plugin
                     var tasks = refreshSchemas.Select((s) =>
                         {
                             var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(s.PublisherMetaJson);
+                            
+                            // add insert schema
+                            if (metaJsonObject.Module.Contains("Insert"))
+                            {
+                                return Task.FromResult(Discover.GetInsertSchemaForModule(metaJsonObject.Module));
+                            }
+                            // add discover schema
                             return GetSchemaForModule(metaJsonObject.Module);
                         })
                         .ToArray();
@@ -170,6 +178,9 @@ namespace PluginSage.Plugin
                 await Task.WhenAll(tasks);
 
                 discoverSchemasResponse.Schemas.AddRange(tasks.Where(x => x.Result != null).Select(x => x.Result));
+                
+                // add insert schemas
+                discoverSchemasResponse.Schemas.AddRange(Discover.GetAllInsertSchemas());
 
                 // return all schema 
                 Logger.Info($"Schemas returned: {discoverSchemasResponse.Schemas.Count}");
