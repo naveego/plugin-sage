@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -287,7 +288,7 @@ namespace PluginSage.Plugin
                     inCount++;
 
                     Logger.Debug($"Got Record: {record.DataJson}");
-                    
+
                     // send record to source system
                     // timeout if it takes longer than the sla
                     var task = Task.Run(() => PutRecord(schema, record));
@@ -378,7 +379,6 @@ namespace PluginSage.Plugin
                 // get a single record
                 var record = busObjectService.GetSingleRecord();
                 var keys = busObjectService.GetKeys();
-                var key = keys[0];
 
                 // assign all properties of record to schema
                 foreach (var col in record)
@@ -389,12 +389,12 @@ namespace PluginSage.Plugin
                         {
                             Id = col.Key,
                             Name = col.Key,
-                            Type = GetPropertyType(col.Value),
-                            IsKey = col.Key == key,
+                            Type = GetPropertyType(col),
+                            IsKey = keys.Contains(col.Key),
                             IsCreateCounter = col.Key == "DATECREATED$",
                             IsUpdateCounter = col.Key == "DATEUPDATED$",
                             TypeAtSource = "",
-                            IsNullable = col.Key != key
+                            IsNullable = !keys.Contains(col.Key),
                         };
 
                         schema.Properties.Add(property);
@@ -410,54 +410,14 @@ namespace PluginSage.Plugin
             }
         }
 
-        /// <summary>
-        /// Gets the property type of a value
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        private PropertyType GetPropertyType(dynamic value)
+        private PropertyType GetPropertyType(KeyValuePair<string, dynamic> col)
         {
+            if (col.Key.Last() != '$')
+            {
+                return PropertyType.Decimal;
+            }
+
             return PropertyType.String;
-//            try
-//            {
-//                // try datetime
-//                if (DateTime.TryParse(value, out DateTime d))
-//                {
-//                    return PropertyType.Date;
-//                }
-//
-//                // try int
-//                if (Int32.TryParse(value, out int i))
-//                {
-//                    return PropertyType.Integer;
-//                }
-//
-//                // try float
-//                if (float.TryParse(value, out float f))
-//                {
-//                    return PropertyType.Float;
-//                }
-//
-//                // try boolean
-//                if (bool.TryParse(value, out bool b))
-//                {
-//                    return PropertyType.Bool;
-//                }
-//
-//                // default return string
-//                return PropertyType.String;
-//            }
-//            catch (Exception e)
-//            {
-//                // try object or array
-//                if (value is IEnumerable)
-//                {
-//                    return PropertyType.Json;
-//                }
-//
-//                Logger.Error(e.Message);
-//                throw;
-//            }
         }
 
         /// <summary>
@@ -469,10 +429,11 @@ namespace PluginSage.Plugin
         private Task<string> PutRecord(Schema schema, Record record)
         {
             IBusinessObject busObjectService;
+            PublisherMetaJson metaJsonObject;
             try
             {
                 // get business object service for given module
-                var metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
+                metaJsonObject = JsonConvert.DeserializeObject<PublisherMetaJson>(schema.PublisherMetaJson);
                 busObjectService = _sessionService.MakeBusinessObject(metaJsonObject.Module);
             }
             catch (Exception e)
@@ -480,19 +441,30 @@ namespace PluginSage.Plugin
                 Logger.Error(e.Message);
                 return Task.FromResult(e.Message);
             }
+
             try
             {
-                // check if source is newer than requested write back
-                if (busObjectService.IsSourceNewer(record, schema))
+                // check if record exists
+                if (!busObjectService.RecordExists(record))
                 {
-                    return Task.FromResult("source system is newer than requested write back");
+                    var error = busObjectService.InsertSingleRecord(record, metaJsonObject.Module);
+                        
+                    Logger.Info("Inserted 1 record.");
+                    return Task.FromResult(error);
                 }
+
+                // check if source is newer than requested write back
+//                if (busObjectService.IsSourceNewer(record, schema))
+//                {
+//                    return Task.FromResult("source system is newer than requested write back");
+//                }
             }
             catch (Exception e)
             {
                 Logger.Error(e.Message);
                 return Task.FromResult(e.Message);
             }
+
             try
             {
                 // update record
@@ -502,7 +474,7 @@ namespace PluginSage.Plugin
                 {
                     Logger.Info("Modified 1 record.");
                 }
-                
+
                 return Task.FromResult(error);
             }
             catch (Exception e)
