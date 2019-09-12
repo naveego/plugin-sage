@@ -70,6 +70,9 @@ namespace PluginSageTest.Plugin
                         
                         mockBusObject.Setup(b => b.UpdateSingleRecord(records[0])).Returns("");
                         mockBusObject.Setup(b => b.UpdateSingleRecord(records[1])).Returns("error");
+                        
+                        mockBusObject.Setup(b => b.InsertSingleRecord(records[0], "test module")).Returns("");
+                        mockBusObject.Setup(b => b.InsertSingleRecord(records[1], "test module")).Returns("error");
 
                         mockBusObject.Setup(b => b.IsSourceNewer(records[0], schema)).Returns(false);
                         mockBusObject.Setup(b => b.IsSourceNewer(records[0], schema)).Returns(false);
