@@ -6,9 +6,14 @@ namespace PluginSage.API.Discover
 {
     public static partial class Discover
     {
-        private static Dictionary<string, Schema> InsertSchemaDictionary = new Dictionary<string, Schema>
+        private static readonly Dictionary<string, Schema> InsertSchemaDictionary = new Dictionary<string, Schema>
         {
-            {SalesOrdersModule(), SalesOrders()}
+//            {SalesOrdersModule(), SalesOrders()}
         };
+
+        public static int GetTotalInsertSchemas()
+        {
+            return InsertSchemaDictionary.Count;
+        }
     }
 }

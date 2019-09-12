@@ -14,12 +14,6 @@ namespace PluginSage.API
         private readonly ISessionService _session;
         private readonly IDispatchObject _busObject;
 
-        private string _command = "";
-        private string _method = "";
-        private string _value = "";
-        private string _variable = "";
-
-
         /// <summary>
         /// Creates a business object
         /// </summary>
@@ -95,7 +89,6 @@ namespace PluginSage.API
             return Metadata.Metadata.GetKeys(_busObject, _session);
         }
 
-
         /// <summary>
         /// Checks if the source system has newer data than the requested write back
         /// </summary>
@@ -105,22 +98,6 @@ namespace PluginSage.API
         public bool IsSourceNewer(Record record, Schema schema)
         {
             return Metadata.Metadata.IsSourceNewer(_busObject, _session, record, schema);
-        }
-
-        private void SetLogParams(string method, string command, string variable, string value)
-        {
-            _method = method;
-            _command = command;
-            _variable = variable;
-            _value = value;
-        }
-
-        private string GetErrorMessage()
-        {
-            var sessionError = _session.GetError();
-
-            return
-                $"Error: {sessionError}, Method: {_method}, Command: {_command}, Variable: {_variable}, Value: {_value}";
         }
     }
 }

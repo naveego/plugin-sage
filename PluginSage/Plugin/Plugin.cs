@@ -170,7 +170,7 @@ namespace PluginSage.Plugin
             // attempt to get a schema for each module requested
             try
             {
-                Logger.Info($"Schemas attempted: {_server.Settings.ModulesList.Length}");
+                Logger.Info($"Schemas attempted: {_server.Settings.ModulesList.Length + Discover.GetTotalInsertSchemas()}");
 
                 var tasks = _server.Settings.ModulesList.Select(GetSchemaForModule)
                     .ToArray();
