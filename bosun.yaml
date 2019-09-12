@@ -1,9 +1,9 @@
 apps:
-- name: plugin-pub-mssql
+- name: plugin-sage
   branching:
     master: master
     develop: master
     release: ""
     feature: issue/{{.Number}}/{{.Slug}}
-  repo: naveego/plugin-pub-mssql
-  version: 3.3.2
+  repo: naveego/plugin-sage
+  version: 4.0.0

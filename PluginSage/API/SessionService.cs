@@ -30,8 +30,8 @@ namespace PluginSage.API
 
             try
             {
-                _oSS.InvokeMethod("nSetUser",settings.Username, settings.Password);
-                _oSS.InvokeMethod("nSetCompany",settings.CompanyCode);
+                _oSS.InvokeMethod("nSetUser", settings.Username, settings.Password);
+                _oSS.InvokeMethod("nSetCompany", settings.CompanyCode);
             }
             catch (Exception e)
             {
@@ -72,9 +72,10 @@ namespace PluginSage.API
             try
             {
                 SetModule(config.Module);
-                var taskId = (int) _oSS.InvokeMethod("nLookupTask",config.TaskName);
-                _oSS.InvokeMethod("nSetProgram",taskId);
-                var busObject = new DispatchObject(_pvx.InvokeMethod("NewObject", config.BusObjectName, _oSS.GetObject()));
+                var taskId = (int) _oSS.InvokeMethod("nLookupTask", config.TaskName);
+                _oSS.InvokeMethod("nSetProgram", taskId);
+                var busObject =
+                    new DispatchObject(_pvx.InvokeMethod("NewObject", config.BusObjectName, _oSS.GetObject()));
 
                 if (config.IsDetails)
                 {
@@ -92,7 +93,7 @@ namespace PluginSage.API
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Sets the module for the session
         /// </summary>
@@ -102,8 +103,8 @@ namespace PluginSage.API
             try
             {
                 var date = DateTime.Now.ToString("MMddyyyy");
-                _oSS.InvokeMethod("nSetDate",moduleCode, date);
-                _oSS.InvokeMethod("nSetModule",moduleCode);
+                _oSS.InvokeMethod("nSetDate", moduleCode, date);
+                _oSS.InvokeMethod("nSetModule", moduleCode);
             }
             catch (Exception e)
             {

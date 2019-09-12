@@ -8,6 +8,8 @@ namespace PluginSage.Interfaces
         List<Dictionary<string, dynamic>> GetAllRecords();
         Dictionary<string, dynamic> GetSingleRecord();
         string UpdateSingleRecord(Record record);
+        string InsertSingleRecord(Record record, string module);
+        bool RecordExists(Record record);
         string[] GetKeys();
         bool IsSourceNewer(Record record, Schema schema);
     }
