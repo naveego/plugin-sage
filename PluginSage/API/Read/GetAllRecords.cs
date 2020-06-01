@@ -27,9 +27,9 @@ namespace PluginSage.API.Read
             }
             catch (Exception e)
             {
-                Logger.Error("Error getting meta data for all records");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error getting meta data for all records");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
 
@@ -64,9 +64,9 @@ namespace PluginSage.API.Read
             }
             catch (Exception e)
             {
-                Logger.Error("Error getting all records");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error getting all records");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
         }

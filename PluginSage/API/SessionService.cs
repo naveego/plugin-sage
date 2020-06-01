@@ -24,7 +24,7 @@ namespace PluginSage.API
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 throw;
             }
 
@@ -35,8 +35,8 @@ namespace PluginSage.API
             }
             catch (Exception e)
             {
-                Logger.Error(GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
+                Logger.Error(e, GetError());
                 throw;
             }
         }
@@ -53,7 +53,7 @@ namespace PluginSage.API
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 throw;
             }
         }
@@ -87,9 +87,9 @@ namespace PluginSage.API
             }
             catch (Exception e)
             {
-                Logger.Error("Error setting business service object");
-                Logger.Error(GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error setting business service object");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, GetError());
                 throw;
             }
         }
@@ -108,8 +108,8 @@ namespace PluginSage.API
             }
             catch (Exception e)
             {
-                Logger.Error(GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
+                Logger.Error(e, GetError());
                 throw;
             }
         }

@@ -60,7 +60,7 @@ namespace PluginSage.Helper
                     IsDetails = false;
                     return;
                 default:
-                    Logger.Error($"Data source {dataSource} not known. Unable to get config.");
+                    Logger.Error(null, $"Data source {dataSource} not known. Unable to get config.");
                     return;
             }
         }

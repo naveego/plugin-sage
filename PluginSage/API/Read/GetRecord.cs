@@ -34,8 +34,8 @@ namespace PluginSage.API.Read
             }
             catch (Exception e)
             {
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
 

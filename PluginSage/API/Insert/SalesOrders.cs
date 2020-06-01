@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Naveego.Sdk.Plugins;
 using Newtonsoft.Json;
 using PluginSage.DataContracts;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
-using Pub;
+
 
 namespace PluginSage.API.Insert
 {
@@ -43,7 +44,7 @@ namespace PluginSage.API.Insert
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 throw;
             }
             
@@ -65,9 +66,9 @@ namespace PluginSage.API.Insert
             catch (Exception e)
             {
                 var error = GetErrorMessage();
-                Logger.Error("Error inserting single record");
-                Logger.Error(error);
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error inserting single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, error);
                 return error;
             }
 
@@ -87,9 +88,9 @@ namespace PluginSage.API.Insert
                     catch (Exception e)
                     {
                         var error = GetErrorMessage();
-                        Logger.Error("Error inserting single record");
-                        Logger.Error(error);
-                        Logger.Error(e.Message);
+                        Logger.Error(e, "Error inserting single record");
+                        Logger.Error(e, e.Message);
+                        Logger.Error(e, error);
                         return error;
                     }
                 }
@@ -118,9 +119,9 @@ namespace PluginSage.API.Insert
                     catch (Exception e)
                     {
                         var error = GetErrorMessage();
-                        Logger.Error("Error inserting single record");
-                        Logger.Error(error);
-                        Logger.Error(e.Message);
+                        Logger.Error(e, "Error inserting single record");
+                        Logger.Error(e, e.Message);
+                        Logger.Error(e, error);
                         return error;
                     }
                 }
@@ -159,9 +160,9 @@ namespace PluginSage.API.Insert
                     catch (Exception e)
                     {
                         var error = GetErrorMessage();
-                        Logger.Error("Error inserting single record");
-                        Logger.Error(error);
-                        Logger.Error(e.Message);
+                        Logger.Error(e, "Error inserting single record");
+                        Logger.Error(e, e.Message);
+                        Logger.Error(e, error);
                         return error;
                     }
                 }
@@ -193,9 +194,9 @@ namespace PluginSage.API.Insert
             catch (Exception e)
             {
                 var error = GetErrorMessage();
-                Logger.Error("Error inserting single record");
-                Logger.Error(error);
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error inserting single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, error);
                 return error;
             }
 

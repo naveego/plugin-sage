@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Naveego.Sdk.Plugins;
 using Newtonsoft.Json;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
-using Pub;
+
 
 namespace PluginSage.API.Metadata
 {
@@ -31,7 +32,7 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 throw;
             }
 
@@ -43,9 +44,9 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error("Error getting meta data for record date check");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error getting meta data for record date check");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
 
@@ -59,9 +60,9 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error("Error setting key for record date check");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error setting key for record date check");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
 
@@ -89,9 +90,9 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error("Error checking date for record date check");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error checking date for record date check");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 return false;
             }
         }

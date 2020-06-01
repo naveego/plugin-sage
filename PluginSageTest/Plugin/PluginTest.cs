@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Moq;
+using Naveego.Sdk.Plugins;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
-using Pub;
+
 using Xunit;
-using Record = Pub.Record;
+using Record = Naveego.Sdk.Plugins.Record;
 
 namespace PluginSageTest.Plugin
 {
@@ -382,7 +383,14 @@ namespace PluginSageTest.Plugin
                     Name = "test",
                     PublisherMetaJson = "{\"Module\":\"test module\"}"
                 },
-                CommitSlaSeconds = 1
+                CommitSlaSeconds = 1,
+                DataVersions = new DataVersions
+                {
+                    JobId = "test",
+                    ShapeId = "test",
+                    JobDataVersion = 1,
+                    ShapeDataVersion = 1
+                }
             };
 
             // act
@@ -418,7 +426,14 @@ namespace PluginSageTest.Plugin
             var prepareRequest = new PrepareWriteRequest()
             {
                 Schema = GetTestSchema(),
-                CommitSlaSeconds = 1
+                CommitSlaSeconds = 1,
+                DataVersions = new DataVersions
+                {
+                    JobId = "test",
+                    ShapeId = "test",
+                    JobDataVersion = 1,
+                    ShapeDataVersion = 1
+                }
             };
 
             var records = GetTestRecords();

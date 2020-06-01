@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Naveego.Sdk.Plugins;
 using Newtonsoft.Json;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
-using Pub;
+
 
 namespace PluginSage.API.Metadata
 {
@@ -28,7 +29,7 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 throw;
             }
 
@@ -48,9 +49,9 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error("Error finding single record");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error finding single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 return false;
             }
 
@@ -62,9 +63,9 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error("Error finding single record");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error finding single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 return false;
             }
         }

@@ -27,9 +27,9 @@ namespace PluginSage.API.Read
             }
             catch (Exception e)
             {
-                Logger.Error("Error getting meta data for single record");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error getting meta data for single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
 
@@ -49,9 +49,9 @@ namespace PluginSage.API.Read
             }
             catch (Exception e)
             {
-                Logger.Error("Error getting single record");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error getting single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
         }

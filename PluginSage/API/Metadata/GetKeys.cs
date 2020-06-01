@@ -23,9 +23,9 @@ namespace PluginSage.API.Metadata
             }
             catch (Exception e)
             {
-                Logger.Error("Error getting keys");
-                Logger.Error(session.GetError());
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error getting keys");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, session.GetError());
                 throw;
             }
         }

@@ -5,13 +5,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Naveego.Sdk.Plugins;
 using Newtonsoft.Json;
 using PluginSage.API;
 using PluginSage.API.Discover;
 using PluginSage.DataContracts;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
-using Pub;
+
 
 namespace PluginSage.Plugin
 {
@@ -50,7 +51,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message, context);
                 return Task.FromResult(new ConnectResponse
                 {
                     OauthStateJson = request.OauthStateJson,
@@ -68,7 +69,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message, context);
                 return Task.FromResult(new ConnectResponse
                 {
                     OauthStateJson = request.OauthStateJson,
@@ -125,6 +126,7 @@ namespace PluginSage.Plugin
         public override async Task<DiscoverSchemasResponse> DiscoverSchemas(DiscoverSchemasRequest request,
             ServerCallContext context)
         {
+            Logger.SetLogPrefix("discover");
             Logger.Info("Discovering Schemas...");
 
             DiscoverSchemasResponse discoverSchemasResponse = new DiscoverSchemasResponse();
@@ -162,8 +164,8 @@ namespace PluginSage.Plugin
                 }
                 catch (Exception e)
                 {
-                    Logger.Error(e.Message);
-                    throw;
+                    Logger.Error(e, e.Message, context);
+                    return new DiscoverSchemasResponse();
                 }
             }
 
@@ -188,8 +190,8 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
-                throw;
+                Logger.Error(e, e.Message, context);
+                return new DiscoverSchemasResponse();
             }
         }
 
@@ -207,6 +209,7 @@ namespace PluginSage.Plugin
             var limit = request.Limit;
             var limitFlag = request.Limit != 0;
 
+            Logger.SetLogPrefix(request.JobId);
             Logger.Info($"Publishing records for schema: {schema.Name}");
 
             try
@@ -244,8 +247,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
-                throw;
+                Logger.Error(e, e.Message, context);
             }
         }
 
@@ -257,6 +259,7 @@ namespace PluginSage.Plugin
         /// <returns></returns>
         public override Task<PrepareWriteResponse> PrepareWrite(PrepareWriteRequest request, ServerCallContext context)
         {
+            Logger.SetLogPrefix(request.DataVersions.JobId);
             Logger.Info("Preparing write...");
             _server.WriteConfigured = false;
 
@@ -334,8 +337,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
-                throw;
+                Logger.Error(e, e.Message, context);
             }
         }
 
@@ -416,7 +418,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 return null;
             }
         }
@@ -449,7 +451,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 return Task.FromResult(e.Message);
             }
 
@@ -472,7 +474,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 return Task.FromResult(e.Message);
             }
 
@@ -490,7 +492,7 @@ namespace PluginSage.Plugin
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 return Task.FromResult(e.Message);
             }
         }

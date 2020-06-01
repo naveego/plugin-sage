@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Naveego.Sdk.Plugins;
 using Newtonsoft.Json;
 using PluginSage.Helper;
 using PluginSage.Interfaces;
-using Pub;
+
 
 namespace PluginSage.API.Update
 {
@@ -49,7 +50,7 @@ namespace PluginSage.API.Update
             }
             catch (Exception e)
             {
-                Logger.Error(e.Message);
+                Logger.Error(e, e.Message);
                 throw;
             }
 
@@ -70,9 +71,9 @@ namespace PluginSage.API.Update
             catch (Exception e)
             {
                 var error = GetErrorMessage();
-                Logger.Error("Error updating single record");
-                Logger.Error(error);
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error updating single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, error);
                 return error;
             }
 
@@ -97,9 +98,9 @@ namespace PluginSage.API.Update
             catch (Exception e)
             {
                 var error = GetErrorMessage();
-                Logger.Error("Error updating single record");
-                Logger.Error(error);
-                Logger.Error(e.Message);
+                Logger.Error(e, "Error updating single record");
+                Logger.Error(e, e.Message);
+                Logger.Error(e, error);
                 return error;
             }
 

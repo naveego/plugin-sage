@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using PluginSage.Helper;
 using Xunit;
@@ -6,20 +7,26 @@ namespace PluginSageTest.Helper
 {
     public class LoggerTest
     {
-        private static string _path = @"plugin-sage-log.txt";
+        private static string _path = @"logs/plugin-sage-log.txt";
         
         [Fact]
         public void VerboseTest()
         {
             // setup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
             Logger.SetLogLevel(Logger.LogLevel.Verbose);
             
             // act
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -27,21 +34,40 @@ namespace PluginSageTest.Helper
             Assert.Equal(4, lines.Length);
             
             // cleanup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
         }
         
         [Fact]
         public void DebugTest()
         {
             // setup
-            File.Delete(_path);
+            try
+            {
+                 try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
+            }
+            catch (Exception e)
+            {
+            }
+
             Logger.SetLogLevel(Logger.LogLevel.Debug);
             
             // act
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -49,21 +75,33 @@ namespace PluginSageTest.Helper
             Assert.Equal(3, lines.Length);
             
             // cleanup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
         }
         
         [Fact]
         public void InfoTest()
         {
             // setup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
             Logger.SetLogLevel(Logger.LogLevel.Info);
             
             // act
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -71,21 +109,39 @@ namespace PluginSageTest.Helper
             Assert.Equal(2, lines.Length);
             
             // cleanup
-            File.Delete(_path);
+             try
+            {
+                 try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
+            }
+            catch (Exception e)
+            {
+            }
         }
         
         [Fact]
         public void ErrorTest()
         {
             // setup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
             Logger.SetLogLevel(Logger.LogLevel.Error);
             
             // act
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.ReadAllLines(_path);
@@ -93,21 +149,33 @@ namespace PluginSageTest.Helper
             Assert.Single(lines);
             
             // cleanup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
         }
         
         [Fact]
         public void OffTest()
         {
             // setup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
             Logger.SetLogLevel(Logger.LogLevel.Off);
             
             // act
             Logger.Verbose("verbose");
             Logger.Debug("debug");
             Logger.Info("info");
-            Logger.Error("error");
+            Logger.Error(new Exception("error"), "error");
 
             // assert
             string[] lines = File.Exists(_path) ? File.ReadAllLines(_path) : new string[0];
@@ -115,7 +183,13 @@ namespace PluginSageTest.Helper
             Assert.Empty(lines);
             
             // cleanup
-            File.Delete(_path);
+             try
+            {
+                File.Delete(_path);
+            }
+            catch (Exception e)
+            {
+            }
         }
     }
 }
