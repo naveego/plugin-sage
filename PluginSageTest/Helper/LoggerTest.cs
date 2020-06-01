@@ -17,7 +17,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
             Logger.SetLogLevel(Logger.LogLevel.Verbose);
@@ -38,7 +38,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
         }
@@ -53,11 +53,11 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
             }
-            catch (Exception e)
+            catch 
             {
             }
 
@@ -79,7 +79,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
         }
@@ -92,7 +92,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
             Logger.SetLogLevel(Logger.LogLevel.Info);
@@ -115,11 +115,11 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
             }
-            catch (Exception e)
+            catch 
             {
             }
         }
@@ -132,7 +132,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
             Logger.SetLogLevel(Logger.LogLevel.Error);
@@ -153,7 +153,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
         }
@@ -166,7 +166,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
             Logger.SetLogLevel(Logger.LogLevel.Off);
@@ -187,7 +187,7 @@ namespace PluginSageTest.Helper
             {
                 File.Delete(_path);
             }
-            catch (Exception e)
+            catch 
             {
             }
         }
