@@ -1,3 +1,5 @@
+using Naveego.Sdk.Logging;
+
 namespace PluginSage.Helper
 {
     public class BusinessObjectConfig
